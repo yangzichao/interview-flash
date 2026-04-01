@@ -1,0 +1,165 @@
+import { useState, useEffect } from 'react'
+import ReactMarkdown from 'react-markdown'
+import { api, type Problem, type Review } from '../lib/api'
+
+const scoreColors = ['', 'text-red-400', 'text-orange-400', 'text-amber-400', 'text-lime-400', 'text-emerald-400']
+const scoreLabels = ['', 'No recall', 'Weak', 'Partial', 'Strong', 'Perfect']
+
+export default function ReviewSession({ problem, onBack }: { problem: Problem; onBack: () => void }) {
+  const [answer, setAnswer] = useState('')
+  const [submitting, setSubmitting] = useState(false)
+  const [result, setResult] = useState<Review | null>(null)
+  const [showDescription, setShowDescription] = useState(false)
+  const [history, setHistory] = useState<Review[]>([])
+
+  useEffect(() => {
+    api.getReviewHistory(problem.id).then(setHistory).catch(() => {})
+  }, [problem.id, result])
+
+  const submit = async () => {
+    if (!answer.trim() || submitting) return
+    setSubmitting(true)
+    try {
+      const review = await api.submitReview(problem.id, answer)
+      setResult(review)
+    } catch (e: any) {
+      alert(e.message)
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const reset = () => {
+    setAnswer('')
+    setResult(null)
+    setShowDescription(false)
+  }
+
+  const topics: string[] = (() => {
+    try { return JSON.parse(problem.topics) } catch { return [] }
+  })()
+
+  return (
+    <div>
+      <div className="mb-6">
+        <div className="flex items-center gap-3 mb-2">
+          <span className="text-zinc-500 text-sm">#{problem.leetcode_id}</span>
+          <h2 className="text-xl font-bold">{problem.title}</h2>
+          <span className={`text-sm ${
+            problem.difficulty === 'Easy' ? 'text-emerald-400' :
+            problem.difficulty === 'Medium' ? 'text-amber-400' : 'text-red-400'
+          }`}>
+            {problem.difficulty}
+          </span>
+        </div>
+        {topics.length > 0 && (
+          <div className="flex gap-1.5 mb-4">
+            {topics.map((t) => (
+              <span key={t} className="text-xs bg-zinc-800 text-zinc-400 px-2 py-0.5 rounded">
+                {t}
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Toggle problem description */}
+      <button
+        onClick={() => setShowDescription(!showDescription)}
+        className="text-sm text-zinc-400 hover:text-zinc-200 mb-4 transition-colors"
+      >
+        {showDescription ? 'Hide' : 'Show'} problem description
+      </button>
+
+      {showDescription && (
+        <div
+          className="problem-content bg-zinc-900 border border-zinc-800 rounded-lg p-5 mb-6"
+          dangerouslySetInnerHTML={{ __html: problem.content }}
+        />
+      )}
+
+      {!result ? (
+        /* Answer input */
+        <div>
+          <label className="block text-sm text-zinc-400 mb-2">
+            Describe your approach (natural language, pseudocode, anything)
+          </label>
+          <textarea
+            value={answer}
+            onChange={(e) => setAnswer(e.target.value)}
+            placeholder="e.g. Use a hash map to store complements. For each number, check if target - num exists in the map..."
+            rows={8}
+            className="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-4 py-3 text-sm placeholder:text-zinc-600 focus:outline-none focus:border-emerald-500 transition-colors resize-y"
+          />
+          <div className="flex items-center justify-between mt-4">
+            <span className="text-xs text-zinc-600">
+              {answer.length > 0 ? `${answer.split(/\s+/).filter(Boolean).length} words` : ''}
+            </span>
+            <button
+              onClick={submit}
+              disabled={!answer.trim() || submitting}
+              className="bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 px-6 py-2.5 rounded-lg text-sm font-medium transition-colors"
+            >
+              {submitting ? 'Evaluating...' : 'Submit for Evaluation'}
+            </button>
+          </div>
+        </div>
+      ) : (
+        /* Evaluation result */
+        <div>
+          <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-6 mb-6">
+            <div className="flex items-center gap-3 mb-4">
+              <span className={`text-3xl font-bold ${scoreColors[result.score]}`}>
+                {result.score}/5
+              </span>
+              <span className={`text-sm ${scoreColors[result.score]}`}>
+                {scoreLabels[result.score]}
+              </span>
+            </div>
+            <div className="prose prose-invert prose-sm max-w-none">
+              <ReactMarkdown>{result.evaluation}</ReactMarkdown>
+            </div>
+          </div>
+
+          <div className="bg-zinc-900/50 border border-zinc-800 rounded-lg p-4 mb-6">
+            <h4 className="text-xs text-zinc-500 uppercase tracking-wider mb-2">Your Answer</h4>
+            <p className="text-sm text-zinc-400 whitespace-pre-wrap">{result.user_answer}</p>
+          </div>
+
+          <div className="flex gap-3">
+            <button
+              onClick={reset}
+              className="bg-emerald-600 hover:bg-emerald-500 px-5 py-2.5 rounded-lg text-sm font-medium transition-colors"
+            >
+              Try Again
+            </button>
+            <button
+              onClick={onBack}
+              className="bg-zinc-800 hover:bg-zinc-700 px-5 py-2.5 rounded-lg text-sm font-medium transition-colors"
+            >
+              Back to Problems
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Review history */}
+      {history.length > 0 && (
+        <div className="mt-10 border-t border-zinc-800 pt-6">
+          <h3 className="text-sm font-semibold text-zinc-400 mb-3">Review History</h3>
+          <div className="space-y-2">
+            {history.map((r) => (
+              <div key={r.id} className="flex items-center gap-3 text-sm text-zinc-500">
+                <span className={`font-medium ${scoreColors[r.score]}`}>{r.score}/5</span>
+                <span>{new Date(r.reviewed_at).toLocaleString()}</span>
+                <span className="text-zinc-700 truncate max-w-md">
+                  {r.user_answer.slice(0, 80)}...
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}

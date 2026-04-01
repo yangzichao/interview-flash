@@ -1,0 +1,42 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply bg-zinc-950 text-zinc-100 antialiased;
+}
+
+/* Style LeetCode HTML content */
+.problem-content {
+  @apply text-sm leading-relaxed text-zinc-300;
+}
+.problem-content p {
+  @apply mb-3;
+}
+.problem-content pre {
+  @apply bg-zinc-800 rounded-lg p-3 my-3 overflow-x-auto text-sm;
+}
+.problem-content code {
+  @apply bg-zinc-800 px-1.5 py-0.5 rounded text-emerald-400 text-sm;
+}
+.problem-content pre code {
+  @apply bg-transparent p-0;
+}
+.problem-content ul, .problem-content ol {
+  @apply ml-5 mb-3;
+}
+.problem-content ul {
+  @apply list-disc;
+}
+.problem-content ol {
+  @apply list-decimal;
+}
+.problem-content li {
+  @apply mb-1;
+}
+.problem-content strong {
+  @apply text-zinc-100 font-semibold;
+}
+.problem-content em {
+  @apply text-zinc-200;
+}
