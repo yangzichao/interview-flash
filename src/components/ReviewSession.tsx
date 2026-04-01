@@ -5,6 +5,47 @@ import { api, type Problem, type Review } from '../lib/api'
 const scoreColors = ['', 'text-red-400', 'text-orange-400', 'text-amber-400', 'text-lime-400', 'text-emerald-400']
 const scoreLabels = ['', 'No recall', 'Weak', 'Partial', 'Strong', 'Perfect']
 
+function HistoryEntry({ review }: { review: Review }) {
+  const [expanded, setExpanded] = useState(false)
+
+  return (
+    <div className="bg-zinc-900 border border-zinc-800 rounded-lg overflow-hidden">
+      <button
+        onClick={() => setExpanded(!expanded)}
+        className="w-full flex items-center justify-between px-4 py-3 hover:bg-zinc-800/50 transition-colors text-left"
+      >
+        <div className="flex items-center gap-3">
+          <span className={`font-medium text-sm ${scoreColors[review.score]}`}>
+            {review.score}/5
+          </span>
+          <span className={`text-xs ${scoreColors[review.score]}`}>
+            {scoreLabels[review.score]}
+          </span>
+          <span className="text-xs text-zinc-600">
+            {new Date(review.reviewed_at).toLocaleString()}
+          </span>
+        </div>
+        <span className="text-zinc-600 text-sm">{expanded ? '▲' : '▼'}</span>
+      </button>
+
+      {expanded && (
+        <div className="border-t border-zinc-800 px-4 py-4 space-y-4">
+          <div>
+            <h4 className="text-xs text-zinc-500 uppercase tracking-wider mb-2">Your Answer</h4>
+            <p className="text-sm text-zinc-400 whitespace-pre-wrap">{review.user_answer}</p>
+          </div>
+          <div>
+            <h4 className="text-xs text-zinc-500 uppercase tracking-wider mb-2">Feedback</h4>
+            <div className="prose prose-invert prose-sm max-w-none">
+              <ReactMarkdown>{review.evaluation}</ReactMarkdown>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function ReviewSession({ problem, onBack }: { problem: Problem; onBack: () => void }) {
   const [answer, setAnswer] = useState('')
   const [submitting, setSubmitting] = useState(false)
@@ -146,16 +187,12 @@ export default function ReviewSession({ problem, onBack }: { problem: Problem; o
       {/* Review history */}
       {history.length > 0 && (
         <div className="mt-10 border-t border-zinc-800 pt-6">
-          <h3 className="text-sm font-semibold text-zinc-400 mb-3">Review History</h3>
-          <div className="space-y-2">
+          <h3 className="text-sm font-semibold text-zinc-400 mb-3">
+            Review History <span className="text-zinc-600 font-normal">({history.length})</span>
+          </h3>
+          <div className="space-y-3">
             {history.map((r) => (
-              <div key={r.id} className="flex items-center gap-3 text-sm text-zinc-500">
-                <span className={`font-medium ${scoreColors[r.score]}`}>{r.score}/5</span>
-                <span>{new Date(r.reviewed_at).toLocaleString()}</span>
-                <span className="text-zinc-700 truncate max-w-md">
-                  {r.user_answer.slice(0, 80)}...
-                </span>
-              </div>
+              <HistoryEntry key={r.id} review={r} />
             ))}
           </div>
         </div>
