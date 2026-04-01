@@ -1,10 +1,17 @@
-import Anthropic from '@anthropic-ai/sdk';
-
-const client = new Anthropic();
+import { execFile } from 'child_process';
 
 interface EvaluationResult {
   score: number;
   evaluation: string;
+}
+
+function runClaude(prompt: string): Promise<string> {
+  return new Promise((resolve, reject) => {
+    execFile('claude', ['-p', prompt], { maxBuffer: 1024 * 1024 }, (err, stdout, stderr) => {
+      if (err) reject(new Error(stderr || err.message));
+      else resolve(stdout.trim());
+    });
+  });
 }
 
 export async function evaluateAnswer(
@@ -13,10 +20,7 @@ export async function evaluateAnswer(
   referenceSolution: string,
   userAnswer: string
 ): Promise<EvaluationResult> {
-  const response = await client.messages.create({
-    model: 'claude-sonnet-4-20250514',
-    max_tokens: 1500,
-    system: `You are a LeetCode coach evaluating a student's recall of algorithm problems.
+  const prompt = `You are a LeetCode coach evaluating a student's recall of algorithm problems.
 The student is trying to recall how to solve a problem from memory. They will describe their approach in natural language, pseudocode, or a mix.
 You are given a reference solution to compare against.
 
@@ -33,11 +37,9 @@ Your job:
 Respond in this exact format:
 SCORE: <number>
 ---
-<your feedback in markdown>`,
-    messages: [
-      {
-        role: 'user',
-        content: `## Problem: ${problemTitle}
+<your feedback in markdown>
+
+## Problem: ${problemTitle}
 
 ${problemContent}
 
@@ -49,12 +51,9 @@ ${referenceSolution}
 ---
 
 ## Student's Answer:
-${userAnswer}`,
-      },
-    ],
-  });
+${userAnswer}`;
 
-  const text = response.content[0].type === 'text' ? response.content[0].text : '';
+  const text = await runClaude(prompt);
 
   const scoreMatch = text.match(/SCORE:\s*(\d)/);
   const score = scoreMatch ? parseInt(scoreMatch[1], 10) : 3;
