@@ -10,6 +10,7 @@ interface EvaluationResult {
 export async function evaluateAnswer(
   problemTitle: string,
   problemContent: string,
+  referenceSolution: string,
   userAnswer: string
 ): Promise<EvaluationResult> {
   const response = await client.messages.create({
@@ -17,6 +18,7 @@ export async function evaluateAnswer(
     max_tokens: 1500,
     system: `You are a LeetCode coach evaluating a student's recall of algorithm problems.
 The student is trying to recall how to solve a problem from memory. They will describe their approach in natural language, pseudocode, or a mix.
+You are given a reference solution to compare against.
 
 Your job:
 1. Assess whether their approach would lead to a correct and efficient solution.
@@ -38,6 +40,11 @@ SCORE: <number>
         content: `## Problem: ${problemTitle}
 
 ${problemContent}
+
+---
+
+## Reference Solution:
+${referenceSolution}
 
 ---
 

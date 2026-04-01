@@ -1,9 +1,7 @@
 import Database from 'better-sqlite3';
 import path from 'path';
-import { fileURLToPath } from 'url';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const db = new Database(path.join(__dirname, '..', 'leetcode-flash.db'));
+const db = new Database(path.join(process.cwd(), 'leetcode-flash.db'));
 
 db.pragma('journal_mode = WAL');
 db.pragma('foreign_keys = ON');
@@ -16,6 +14,7 @@ db.exec(`
     slug TEXT NOT NULL,
     difficulty TEXT NOT NULL,
     content TEXT NOT NULL,
+    solution TEXT DEFAULT '',
     topics TEXT DEFAULT '[]',
     added_at TEXT DEFAULT (datetime('now'))
   );

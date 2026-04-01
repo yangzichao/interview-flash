@@ -18,6 +18,7 @@ router.post('/', async (req, res) => {
     const { score, evaluation } = await evaluateAnswer(
       problem.title,
       problem.content,
+      problem.solution || '',
       user_answer
     );
 
