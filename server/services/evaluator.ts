@@ -179,19 +179,33 @@ export async function evaluateAnswer(
 
   let studentSection = `## Student's Answer:\n${userAnswer}`;
 
-  // For system design multi-step, include per-step answers
-  if (category === 'System Design' && stepData) {
-    const steps = [
-      ['Requirements Clarification', stepData.requirements],
-      ['Capacity Estimation', stepData.capacity],
-      ['API Design', stepData.api],
-      ['Data Model', stepData.data_model],
-      ['High-Level Architecture', stepData.architecture],
-      ['Deep Dives', stepData.deep_dives],
-    ].filter(([_, v]) => v && v.trim());
+  // For multi-step workflows, include per-step answers
+  if (stepData) {
+    let stepEntries: [string, string | undefined][] = [];
 
-    if (steps.length > 0) {
-      studentSection = steps.map(([label, answer]) => `## Student — ${label}\n${answer}`).join('\n\n---\n\n');
+    if (category === 'System Design') {
+      stepEntries = [
+        ['Requirements Clarification', stepData.requirements],
+        ['Capacity Estimation', stepData.capacity],
+        ['API Design', stepData.api],
+        ['Data Model', stepData.data_model],
+        ['High-Level Architecture', stepData.architecture],
+        ['Deep Dives', stepData.deep_dives],
+      ];
+    } else if (category === 'OOD') {
+      stepEntries = [
+        ['Requirements & Use Cases', stepData.use_cases],
+        ['Core Objects & Entities', stepData.core_objects],
+        ['Relationships & Class Hierarchy', stepData.relationships],
+        ['Key Methods & Interfaces', stepData.interfaces_apis],
+        ['Design Patterns', stepData.design_patterns],
+        ['Extensibility & Trade-offs', stepData.extensibility],
+      ];
+    }
+
+    const filled = stepEntries.filter(([_, v]) => v && v.trim());
+    if (filled.length > 0) {
+      studentSection = filled.map(([label, answer]) => `## Student — ${label}\n${answer}`).join('\n\n---\n\n');
     }
   }
 
