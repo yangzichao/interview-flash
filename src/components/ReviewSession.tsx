@@ -43,8 +43,6 @@ function parseSections(evaluation: string): { title: string; content: string }[]
 }
 
 function EvaluationDisplay({ result, onReset, onBack }: { result: Review; onReset: () => void; onBack: () => void }) {
-  const sections = parseSections(result.evaluation)
-
   return (
     <div className="space-y-4">
       {/* Score banner */}
@@ -60,26 +58,8 @@ function EvaluationDisplay({ result, onReset, onBack }: { result: Review; onRese
         </div>
       </div>
 
-      {/* Sections */}
-      {sections.map((s, i) => (
-        <div key={i} className={`bg-zinc-900 border-l-2 ${sectionColors[s.title] || 'border-zinc-700'} border border-zinc-800 rounded-lg p-5`}>
-          <h3 className={`text-sm font-semibold mb-3 ${sectionHeaderColors[s.title] || 'text-zinc-300'}`}>
-            {s.title}
-          </h3>
-          <div className="prose prose-invert prose-sm max-w-none">
-            <ReactMarkdown>{s.content}</ReactMarkdown>
-          </div>
-        </div>
-      ))}
-
-      {/* If no sections parsed, fall back to raw markdown */}
-      {sections.length === 0 && (
-        <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-5">
-          <div className="prose prose-invert prose-sm max-w-none">
-            <ReactMarkdown>{result.evaluation}</ReactMarkdown>
-          </div>
-        </div>
-      )}
+      {/* Feedback sections */}
+      <SectionCards evaluation={result.evaluation} />
 
       {/* Your answer */}
       <div className="bg-zinc-900/50 border border-zinc-800 rounded-lg p-4">
@@ -102,6 +82,33 @@ function EvaluationDisplay({ result, onReset, onBack }: { result: Review; onRese
           Back to Problems
         </button>
       </div>
+    </div>
+  )
+}
+
+function SectionCards({ evaluation }: { evaluation: string }) {
+  const sections = parseSections(evaluation)
+
+  if (sections.length === 0) {
+    return (
+      <div className="prose prose-invert prose-sm max-w-none">
+        <ReactMarkdown>{evaluation}</ReactMarkdown>
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-3">
+      {sections.map((s, i) => (
+        <div key={i} className={`bg-zinc-900 border-l-2 ${sectionColors[s.title] || 'border-zinc-700'} border border-zinc-800 rounded-lg p-4`}>
+          <h3 className={`text-sm font-semibold mb-2 ${sectionHeaderColors[s.title] || 'text-zinc-300'}`}>
+            {s.title}
+          </h3>
+          <div className="prose prose-invert prose-sm max-w-none">
+            <ReactMarkdown>{s.content}</ReactMarkdown>
+          </div>
+        </div>
+      ))}
     </div>
   )
 }
@@ -135,12 +142,7 @@ function HistoryEntry({ review }: { review: Review }) {
             <h4 className="text-xs text-zinc-500 uppercase tracking-wider mb-2">Your Answer</h4>
             <p className="text-sm text-zinc-400 whitespace-pre-wrap">{review.user_answer}</p>
           </div>
-          <div>
-            <h4 className="text-xs text-zinc-500 uppercase tracking-wider mb-2">Feedback</h4>
-            <div className="prose prose-invert prose-sm max-w-none">
-              <ReactMarkdown>{review.evaluation}</ReactMarkdown>
-            </div>
-          </div>
+          <SectionCards evaluation={review.evaluation} />
         </div>
       )}
     </div>
