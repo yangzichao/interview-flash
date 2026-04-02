@@ -172,9 +172,28 @@ export async function evaluateAnswer(
   problemContent: string,
   referenceSolution: string,
   userAnswer: string,
-  category: string = ''
+  category: string = '',
+  stepData?: Record<string, string>
 ): Promise<EvaluationResult> {
   const systemPrompt = getSystemPrompt(category);
+
+  let studentSection = `## Student's Answer:\n${userAnswer}`;
+
+  // For system design multi-step, include per-step answers
+  if (category === 'System Design' && stepData) {
+    const steps = [
+      ['Requirements Clarification', stepData.requirements],
+      ['Capacity Estimation', stepData.capacity],
+      ['API Design', stepData.api],
+      ['Data Model', stepData.data_model],
+      ['High-Level Architecture', stepData.architecture],
+      ['Deep Dives', stepData.deep_dives],
+    ].filter(([_, v]) => v && v.trim());
+
+    if (steps.length > 0) {
+      studentSection = steps.map(([label, answer]) => `## Student — ${label}\n${answer}`).join('\n\n---\n\n');
+    }
+  }
 
   const prompt = `${systemPrompt}
 
@@ -189,8 +208,7 @@ ${referenceSolution}
 
 ---
 
-## Student's Answer:
-${userAnswer}`;
+${studentSection}`;
 
   const text = await runClaude(prompt);
 

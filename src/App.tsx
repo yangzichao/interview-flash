@@ -1,20 +1,35 @@
 import { useState } from 'react'
-import ProblemList from './components/ProblemList'
-import ReviewSession from './components/ReviewSession'
-import type { Problem, ProblemType } from './lib/api'
+import AlgorithmList from './components/AlgorithmList'
+import BehavioralList from './components/BehavioralList'
+import OODList from './components/OODList'
+import SystemDesignList from './components/SystemDesignList'
+import AlgoReview from './components/AlgoReview'
+import BehavioralReview from './components/BehavioralReview'
+import OODReview from './components/OODReview'
+import SystemDesignReview from './components/SystemDesignReview'
+import type { Algorithm, BehavioralQuestion, OODProblem, SystemDesignProblem } from './lib/api'
 
-type View = { type: 'list' } | { type: 'review'; problem: Problem }
+type Tab = 'algorithm' | 'behavioral' | 'ood' | 'system-design'
 
-const tabs: { key: ProblemType; label: string; icon: string }[] = [
-  { key: 'algorithm', label: 'Algorithms', icon: '{}' },
-  { key: 'behavioral', label: 'Behavioral', icon: '💬' },
-  { key: 'ood', label: 'OOD', icon: '🧱' },
-  { key: 'system-design', label: 'System Design', icon: '🏗' },
+type View =
+  | { type: 'list' }
+  | { type: 'algo-review'; item: Algorithm }
+  | { type: 'behavioral-review'; item: BehavioralQuestion }
+  | { type: 'ood-review'; item: OODProblem }
+  | { type: 'sd-review'; item: SystemDesignProblem }
+
+const tabs: { key: Tab; label: string }[] = [
+  { key: 'algorithm', label: 'Algorithms' },
+  { key: 'behavioral', label: 'Behavioral' },
+  { key: 'ood', label: 'OOD' },
+  { key: 'system-design', label: 'System Design' },
 ]
 
 export default function App() {
   const [view, setView] = useState<View>({ type: 'list' })
-  const [activeTab, setActiveTab] = useState<ProblemType>('algorithm')
+  const [activeTab, setActiveTab] = useState<Tab>('algorithm')
+
+  const goBack = () => setView({ type: 'list' })
 
   return (
     <div className="min-h-screen">
@@ -22,22 +37,18 @@ export default function App() {
         <div className="max-w-5xl mx-auto flex items-center justify-between">
           <h1
             className="text-xl font-bold tracking-tight cursor-pointer hover:text-emerald-400 transition-colors"
-            onClick={() => setView({ type: 'list' })}
+            onClick={goBack}
           >
             ⚡ Interview Flash
           </h1>
-          {view.type === 'review' && (
-            <button
-              onClick={() => setView({ type: 'list' })}
-              className="text-sm text-zinc-400 hover:text-zinc-200 transition-colors"
-            >
-              ← Back to problems
+          {view.type !== 'list' && (
+            <button onClick={goBack} className="text-sm text-zinc-400 hover:text-zinc-200 transition-colors">
+              ← Back
             </button>
           )}
         </div>
       </header>
 
-      {/* Tabs — only show on list view */}
       {view.type === 'list' && (
         <div className="border-b border-zinc-800">
           <div className="max-w-5xl mx-auto px-6">
@@ -52,7 +63,6 @@ export default function App() {
                       : 'border-transparent text-zinc-500 hover:text-zinc-300'
                   }`}
                 >
-                  <span className="mr-1.5">{tab.icon}</span>
                   {tab.label}
                 </button>
               ))}
@@ -62,17 +72,22 @@ export default function App() {
       )}
 
       <main className="max-w-5xl mx-auto px-6 py-8">
-        {view.type === 'list' ? (
-          <ProblemList
-            problemType={activeTab}
-            onReview={(p) => setView({ type: 'review', problem: p })}
-          />
-        ) : (
-          <ReviewSession
-            problem={view.problem}
-            onBack={() => setView({ type: 'list' })}
-          />
+        {view.type === 'list' && activeTab === 'algorithm' && (
+          <AlgorithmList onReview={(item) => setView({ type: 'algo-review', item })} />
         )}
+        {view.type === 'list' && activeTab === 'behavioral' && (
+          <BehavioralList onReview={(item) => setView({ type: 'behavioral-review', item })} />
+        )}
+        {view.type === 'list' && activeTab === 'ood' && (
+          <OODList onReview={(item) => setView({ type: 'ood-review', item })} />
+        )}
+        {view.type === 'list' && activeTab === 'system-design' && (
+          <SystemDesignList onReview={(item) => setView({ type: 'sd-review', item })} />
+        )}
+        {view.type === 'algo-review' && <AlgoReview item={view.item} onBack={goBack} />}
+        {view.type === 'behavioral-review' && <BehavioralReview item={view.item} onBack={goBack} />}
+        {view.type === 'ood-review' && <OODReview item={view.item} onBack={goBack} />}
+        {view.type === 'sd-review' && <SystemDesignReview item={view.item} onBack={goBack} />}
       </main>
     </div>
   )
