@@ -2,8 +2,9 @@ import db from './db.js';
 import { fetchProblem } from './services/leetcode.js';
 import seedData from './seed-data.js';
 import extendedData from './seed-data-extended.js';
+import extraData from './seed-data-extra.js';
 
-const allProblems = [...seedData, ...extendedData];
+const allProblems = [...seedData, ...extendedData, ...extraData];
 const DELAY_MS = 1200; // be polite to LeetCode API
 
 function sleep(ms: number) {
