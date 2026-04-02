@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
-import { api, type Problem } from '../lib/api'
+import { api, type Problem, type ProblemType } from '../lib/api'
 
 const difficultyColor: Record<string, string> = {
   Easy: 'text-emerald-400',
@@ -17,6 +17,20 @@ const listColors: Record<string, string> = {
   'System Design': 'bg-orange-500/20 text-orange-400 border-orange-500/30',
 }
 
+const typeLabels: Record<ProblemType, string> = {
+  algorithm: 'Algorithm',
+  behavioral: 'Behavioral',
+  ood: 'OOD',
+  'system-design': 'System Design',
+}
+
+const typePlaceholders: Record<ProblemType, string> = {
+  algorithm: 'e.g. Use a hash map to store complements...',
+  behavioral: 'e.g. In my last role, I faced a situation where...',
+  ood: 'e.g. I would create a base class Vehicle with subclasses Car, Truck...',
+  'system-design': 'e.g. I would use a load balancer in front of stateless API servers...',
+}
+
 function scoreLabel(score: number | null) {
   if (!score) return null
   const colors = ['', 'bg-red-500/20 text-red-400', 'bg-orange-500/20 text-orange-400', 'bg-amber-500/20 text-amber-400', 'bg-lime-500/20 text-lime-400', 'bg-emerald-500/20 text-emerald-400']
@@ -31,8 +45,17 @@ function parseLists(raw: string): string[] {
   try { return JSON.parse(raw) } catch { return [] }
 }
 
-export default function ProblemList({ onReview }: { onReview: (p: Problem) => void }) {
-  const [problems, setProblems] = useState<Problem[]>([])
+function parseTopics(raw: string): string[] {
+  try { return JSON.parse(raw) } catch { return [] }
+}
+
+interface Props {
+  problemType: ProblemType
+  onReview: (p: Problem) => void
+}
+
+export default function ProblemList({ problemType, onReview }: Props) {
+  const [allProblems, setAllProblems] = useState<Problem[]>([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -41,10 +64,24 @@ export default function ProblemList({ onReview }: { onReview: (p: Problem) => vo
   const [filterDifficulty, setFilterDifficulty] = useState<string | null>(null)
   const [search, setSearch] = useState('')
 
-  const load = () => api.getProblems().then(setProblems).catch(() => {})
+  const load = () => api.getProblems().then(setAllProblems).catch(() => {})
   useEffect(() => { load() }, [])
 
-  // Derive available filters from data
+  // Reset filters when switching tabs
+  useEffect(() => {
+    setFilterList(null)
+    setFilterCategory(null)
+    setFilterDifficulty(null)
+    setSearch('')
+  }, [problemType])
+
+  // Filter by type first
+  const problems = useMemo(() =>
+    allProblems.filter(p => p.type === problemType),
+    [allProblems, problemType]
+  )
+
+  // Derive available filters from type-filtered data
   const { allLists, allCategories } = useMemo(() => {
     const listsSet = new Set<string>()
     const catsSet = new Set<string>()
@@ -93,165 +130,136 @@ export default function ProblemList({ onReview }: { onReview: (p: Problem) => vo
   }
 
   const hasFilters = filterList || filterCategory || filterDifficulty || search
+  const isAlgo = problemType === 'algorithm'
+  const showListFilters = allLists.length > 1
+  const showCategoryFilters = allCategories.length > 1
+  const showDifficultyFilters = isAlgo
 
   return (
     <div>
-      {/* Add problem */}
-      <div className="mb-6">
-        <h2 className="text-lg font-semibold mb-3">Add Problem</h2>
-        <div className="flex gap-3">
-          <input
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && addProblem()}
-            placeholder="Problem slug, URL, or title (e.g. two-sum)"
-            className="flex-1 bg-zinc-900 border border-zinc-700 rounded-lg px-4 py-2.5 text-sm placeholder:text-zinc-500 focus:outline-none focus:border-emerald-500 transition-colors"
-          />
-          <button
-            onClick={addProblem}
-            disabled={loading}
-            className="bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 px-5 py-2.5 rounded-lg text-sm font-medium transition-colors"
-          >
-            {loading ? 'Adding...' : 'Add'}
-          </button>
+      {/* Add problem — only for algorithm type */}
+      {isAlgo && (
+        <div className="mb-6">
+          <h2 className="text-lg font-semibold mb-3">Add Problem</h2>
+          <div className="flex gap-3">
+            <input
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && addProblem()}
+              placeholder="Problem slug, URL, or title (e.g. two-sum)"
+              className="flex-1 bg-zinc-900 border border-zinc-700 rounded-lg px-4 py-2.5 text-sm placeholder:text-zinc-500 focus:outline-none focus:border-emerald-500 transition-colors"
+            />
+            <button
+              onClick={addProblem}
+              disabled={loading}
+              className="bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 px-5 py-2.5 rounded-lg text-sm font-medium transition-colors"
+            >
+              {loading ? 'Adding...' : 'Add'}
+            </button>
+          </div>
+          {error && <p className="text-red-400 text-sm mt-2">{error}</p>}
         </div>
-        {error && <p className="text-red-400 text-sm mt-2">{error}</p>}
-      </div>
+      )}
 
       {problems.length === 0 ? (
         <div className="text-center py-16 text-zinc-500">
-          <p className="text-lg mb-2">No problems yet</p>
-          <p className="text-sm">Add a problem to start reviewing</p>
+          <p className="text-lg mb-2">No {typeLabels[problemType]} problems yet</p>
+          {isAlgo && <p className="text-sm">Add a problem to start reviewing</p>}
         </div>
       ) : (
         <div>
           {/* Filters */}
           <div className="mb-6 space-y-3">
-            {/* Search */}
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search problems..."
+              placeholder={`Search ${typeLabels[problemType].toLowerCase()} problems...`}
               className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-4 py-2 text-sm placeholder:text-zinc-600 focus:outline-none focus:border-zinc-600 transition-colors"
             />
 
-            {/* List filter */}
-            <div className="flex flex-wrap gap-2">
-              <span className="text-xs text-zinc-500 py-1 mr-1">List:</span>
-              {allLists.map(l => (
-                <button
-                  key={l}
-                  onClick={() => setFilterList(filterList === l ? null : l)}
-                  className={`text-xs px-3 py-1 rounded-full border transition-colors ${
-                    filterList === l
-                      ? listColors[l] || 'bg-zinc-700 text-zinc-200 border-zinc-600'
-                      : 'bg-zinc-900 text-zinc-500 border-zinc-800 hover:border-zinc-600'
-                  }`}
-                >
-                  {l}
-                </button>
-              ))}
-            </div>
+            {showListFilters && (
+              <div className="flex flex-wrap gap-2 items-center">
+                <span className="text-xs text-zinc-500 py-1 mr-1">List:</span>
+                {allLists.map(l => (
+                  <button
+                    key={l}
+                    onClick={() => setFilterList(filterList === l ? null : l)}
+                    className={`text-xs px-3 py-1 rounded-full border transition-colors ${
+                      filterList === l
+                        ? listColors[l] || 'bg-zinc-700 text-zinc-200 border-zinc-600'
+                        : 'bg-zinc-900 text-zinc-500 border-zinc-800 hover:border-zinc-600'
+                    }`}
+                  >
+                    {l}
+                  </button>
+                ))}
+              </div>
+            )}
 
-            {/* Category filter */}
-            <div className="flex flex-wrap gap-2">
-              <span className="text-xs text-zinc-500 py-1 mr-1">Category:</span>
-              {allCategories.map(c => (
-                <button
-                  key={c}
-                  onClick={() => setFilterCategory(filterCategory === c ? null : c)}
-                  className={`text-xs px-3 py-1 rounded-full border transition-colors ${
-                    filterCategory === c
-                      ? 'bg-zinc-700 text-zinc-200 border-zinc-500'
-                      : 'bg-zinc-900 text-zinc-500 border-zinc-800 hover:border-zinc-600'
-                  }`}
-                >
-                  {c}
-                </button>
-              ))}
-            </div>
+            {showCategoryFilters && (
+              <div className="flex flex-wrap gap-2 items-center">
+                <span className="text-xs text-zinc-500 py-1 mr-1">Category:</span>
+                {allCategories.map(c => (
+                  <button
+                    key={c}
+                    onClick={() => setFilterCategory(filterCategory === c ? null : c)}
+                    className={`text-xs px-3 py-1 rounded-full border transition-colors ${
+                      filterCategory === c
+                        ? 'bg-zinc-700 text-zinc-200 border-zinc-500'
+                        : 'bg-zinc-900 text-zinc-500 border-zinc-800 hover:border-zinc-600'
+                    }`}
+                  >
+                    {c}
+                  </button>
+                ))}
+              </div>
+            )}
 
-            {/* Difficulty filter */}
-            <div className="flex flex-wrap gap-2">
-              <span className="text-xs text-zinc-500 py-1 mr-1">Difficulty:</span>
-              {['Easy', 'Medium', 'Hard'].map(d => (
-                <button
-                  key={d}
-                  onClick={() => setFilterDifficulty(filterDifficulty === d ? null : d)}
-                  className={`text-xs px-3 py-1 rounded-full border transition-colors ${
-                    filterDifficulty === d
-                      ? `${difficultyColor[d]} bg-zinc-800 border-zinc-600`
-                      : 'bg-zinc-900 text-zinc-500 border-zinc-800 hover:border-zinc-600'
-                  }`}
-                >
-                  {d}
-                </button>
-              ))}
-              {hasFilters && (
-                <button
-                  onClick={() => { setFilterList(null); setFilterCategory(null); setFilterDifficulty(null); setSearch('') }}
-                  className="text-xs px-3 py-1 text-zinc-500 hover:text-zinc-300 transition-colors"
-                >
-                  Clear all
-                </button>
-              )}
-            </div>
+            {showDifficultyFilters && (
+              <div className="flex flex-wrap gap-2 items-center">
+                <span className="text-xs text-zinc-500 py-1 mr-1">Difficulty:</span>
+                {['Easy', 'Medium', 'Hard'].map(d => (
+                  <button
+                    key={d}
+                    onClick={() => setFilterDifficulty(filterDifficulty === d ? null : d)}
+                    className={`text-xs px-3 py-1 rounded-full border transition-colors ${
+                      filterDifficulty === d
+                        ? `${difficultyColor[d]} bg-zinc-800 border-zinc-600`
+                        : 'bg-zinc-900 text-zinc-500 border-zinc-800 hover:border-zinc-600'
+                    }`}
+                  >
+                    {d}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {hasFilters && (
+              <button
+                onClick={() => { setFilterList(null); setFilterCategory(null); setFilterDifficulty(null); setSearch('') }}
+                className="text-xs px-3 py-1 text-zinc-500 hover:text-zinc-300 transition-colors"
+              >
+                Clear all filters
+              </button>
+            )}
           </div>
 
           {/* Problem list */}
           <div className="space-y-2">
             <h2 className="text-lg font-semibold mb-3">
-              Problems <span className="text-zinc-500 text-sm font-normal">({filtered.length}{hasFilters ? ` / ${problems.length}` : ''})</span>
+              {typeLabels[problemType]} <span className="text-zinc-500 text-sm font-normal">({filtered.length}{hasFilters ? ` / ${problems.length}` : ''})</span>
             </h2>
-            {filtered.map((p) => {
-              const pLists = parseLists(p.lists)
-              return (
-                <div
-                  key={p.id}
-                  className="flex items-center justify-between bg-zinc-900 border border-zinc-800 rounded-lg px-4 py-3 hover:border-zinc-700 transition-colors group"
-                >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <span className="text-zinc-500 text-sm w-8 text-right shrink-0">
-                      {p.leetcode_id}
-                    </span>
-                    <span className="font-medium truncate">{p.title}</span>
-                    <span className={`text-xs shrink-0 ${difficultyColor[p.difficulty] || ''}`}>
-                      {p.difficulty}
-                    </span>
-                    {p.category && (
-                      <span className="text-xs text-zinc-600 shrink-0 hidden sm:inline">
-                        {p.category}
-                      </span>
-                    )}
-                    {scoreLabel(p.last_score)}
-                    {pLists.map(l => (
-                      <span
-                        key={l}
-                        className={`text-[10px] px-1.5 py-0.5 rounded border shrink-0 hidden md:inline ${listColors[l] || 'bg-zinc-800 text-zinc-500 border-zinc-700'}`}
-                      >
-                        {l}
-                      </span>
-                    ))}
-                  </div>
-                  <div className="flex items-center gap-2 shrink-0">
-                    <button
-                      onClick={() => onReview(p)}
-                      className="text-sm text-emerald-400 hover:text-emerald-300 px-3 py-1 rounded transition-colors"
-                    >
-                      Review
-                    </button>
-                    <button
-                      onClick={() => deleteProblem(p.id)}
-                      className="text-sm text-zinc-600 hover:text-red-400 opacity-0 group-hover:opacity-100 px-2 py-1 rounded transition-all"
-                    >
-                      ✕
-                    </button>
-                  </div>
-                </div>
-              )
-            })}
+            {filtered.map((p) => (
+              <ProblemRow
+                key={p.id}
+                problem={p}
+                problemType={problemType}
+                onReview={onReview}
+                onDelete={deleteProblem}
+              />
+            ))}
             {filtered.length === 0 && (
               <div className="text-center py-8 text-zinc-500 text-sm">
                 No problems match the current filters
@@ -260,6 +268,72 @@ export default function ProblemList({ onReview }: { onReview: (p: Problem) => vo
           </div>
         </div>
       )}
+    </div>
+  )
+}
+
+function ProblemRow({ problem: p, problemType, onReview, onDelete }: {
+  problem: Problem
+  problemType: ProblemType
+  onReview: (p: Problem) => void
+  onDelete: (id: number) => void
+}) {
+  const pLists = parseLists(p.lists)
+  const topics = parseTopics(p.topics)
+  const isAlgo = problemType === 'algorithm'
+
+  return (
+    <div className="flex items-center justify-between bg-zinc-900 border border-zinc-800 rounded-lg px-4 py-3 hover:border-zinc-700 transition-colors group">
+      <div className="flex items-center gap-3 min-w-0">
+        {isAlgo && (
+          <span className="text-zinc-500 text-sm w-8 text-right shrink-0">
+            {p.leetcode_id}
+          </span>
+        )}
+        <span className="font-medium truncate">{p.title}</span>
+        <span className={`text-xs shrink-0 ${difficultyColor[p.difficulty] || 'text-zinc-500'}`}>
+          {p.difficulty}
+        </span>
+        {isAlgo && p.category && (
+          <span className="text-xs text-zinc-600 shrink-0 hidden sm:inline">
+            {p.category}
+          </span>
+        )}
+        {!isAlgo && topics.length > 0 && (
+          <div className="hidden sm:flex gap-1">
+            {topics.slice(0, 3).map(t => (
+              <span key={t} className="text-[10px] text-zinc-600 bg-zinc-800 px-1.5 py-0.5 rounded">
+                {t}
+              </span>
+            ))}
+          </div>
+        )}
+        {scoreLabel(p.last_score)}
+        {isAlgo && pLists.map(l => (
+          <span
+            key={l}
+            className={`text-[10px] px-1.5 py-0.5 rounded border shrink-0 hidden md:inline ${listColors[l] || 'bg-zinc-800 text-zinc-500 border-zinc-700'}`}
+          >
+            {l}
+          </span>
+        ))}
+      </div>
+      <div className="flex items-center gap-2 shrink-0">
+        <button
+          onClick={() => onReview(p)}
+          className="text-sm text-emerald-400 hover:text-emerald-300 px-3 py-1 rounded transition-colors"
+        >
+          Review
+        </button>
+        {isAlgo && (
+          <button
+            onClick={() => onDelete(p.id)}
+            className="text-sm text-zinc-600 hover:text-red-400 opacity-0 group-hover:opacity-100 px-2 py-1 rounded transition-all"
+          >
+            ✕
+          </button>
+        )}
+      </div>
     </div>
   )
 }

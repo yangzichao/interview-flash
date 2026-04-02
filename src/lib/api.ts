@@ -1,10 +1,13 @@
 const BASE = '/api';
 
+export type ProblemType = 'algorithm' | 'behavioral' | 'ood' | 'system-design';
+
 export interface Problem {
   id: number;
   leetcode_id: number;
   title: string;
   slug: string;
+  type: ProblemType;
   difficulty: string;
   content: string;
   category: string;

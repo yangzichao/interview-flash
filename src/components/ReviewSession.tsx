@@ -189,7 +189,9 @@ export default function ReviewSession({ problem, onBack }: { problem: Problem; o
     <div>
       <div className="mb-6">
         <div className="flex items-center gap-3 mb-2">
-          <span className="text-zinc-500 text-sm">#{problem.leetcode_id}</span>
+          {problem.type === 'algorithm' && (
+            <span className="text-zinc-500 text-sm">#{problem.leetcode_id}</span>
+          )}
           <h2 className="text-xl font-bold">{problem.title}</h2>
           <span className={`text-sm ${
             problem.difficulty === 'Easy' ? 'text-emerald-400' :
@@ -197,6 +199,11 @@ export default function ReviewSession({ problem, onBack }: { problem: Problem; o
           }`}>
             {problem.difficulty}
           </span>
+          {problem.type !== 'algorithm' && (
+            <span className="text-xs bg-zinc-800 text-zinc-400 px-2 py-0.5 rounded">
+              {problem.category}
+            </span>
+          )}
         </div>
         {topics.length > 0 && (
           <div className="flex gap-1.5 mb-4">
@@ -228,12 +235,26 @@ export default function ReviewSession({ problem, onBack }: { problem: Problem; o
         /* Answer input */
         <div>
           <label className="block text-sm text-zinc-400 mb-2">
-            Describe your approach (natural language, pseudocode, anything)
+            {problem.type === 'behavioral'
+              ? 'Describe your answer (use STAR method: Situation, Task, Action, Result)'
+              : problem.type === 'ood'
+              ? 'Describe your class design, relationships, and patterns'
+              : problem.type === 'system-design'
+              ? 'Describe your architecture, components, and trade-offs'
+              : 'Describe your approach (natural language, pseudocode, anything)'}
           </label>
           <textarea
             value={answer}
             onChange={(e) => setAnswer(e.target.value)}
-            placeholder="e.g. Use a hash map to store complements. For each number, check if target - num exists in the map..."
+            placeholder={
+              problem.type === 'behavioral'
+                ? 'e.g. In my previous role at X, we had a situation where...'
+                : problem.type === 'ood'
+                ? 'e.g. I would create a base class Vehicle with subclasses Car, Truck. A ParkingLot has Levels, each has Spots...'
+                : problem.type === 'system-design'
+                ? 'e.g. Start with requirements: 100M users, read-heavy. Use a load balancer, stateless API servers, Redis cache...'
+                : 'e.g. Use a hash map to store complements. For each number, check if target - num exists in the map...'
+            }
             rows={8}
             className="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-4 py-3 text-sm placeholder:text-zinc-600 focus:outline-none focus:border-emerald-500 transition-colors resize-y"
           />

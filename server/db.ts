@@ -12,6 +12,7 @@ db.exec(`
     leetcode_id INTEGER UNIQUE NOT NULL,
     title TEXT NOT NULL,
     slug TEXT NOT NULL,
+    type TEXT NOT NULL DEFAULT 'algorithm',
     difficulty TEXT NOT NULL,
     content TEXT NOT NULL,
     solution TEXT DEFAULT '',
