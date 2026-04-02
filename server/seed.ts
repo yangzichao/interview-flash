@@ -11,8 +11,8 @@ function sleep(ms: number) {
 }
 
 const insertStmt = db.prepare(`
-  INSERT OR IGNORE INTO problems (leetcode_id, title, slug, difficulty, content, solution, topics)
-  VALUES (?, ?, ?, ?, ?, ?, ?)
+  INSERT OR IGNORE INTO problems (leetcode_id, title, slug, difficulty, content, solution, category, topics, lists)
+  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
 `);
 
 async function seed() {
@@ -23,14 +23,14 @@ async function seed() {
   let failed = 0;
 
   for (let i = 0; i < allProblems.length; i++) {
-    const { slug, solution } = allProblems[i];
+    const { slug, solution, category, lists } = allProblems[i];
+    const listsJson = JSON.stringify(lists || []);
 
     // Check if already exists
     const existing = db.prepare('SELECT id FROM problems WHERE slug = ?').get(slug);
     if (existing) {
-      // Update solution if it's empty
-      db.prepare("UPDATE problems SET solution = ? WHERE slug = ? AND (solution IS NULL OR solution = '')").run(solution, slug);
-      console.log(`  [${i + 1}/${allProblems.length}] ✓ ${slug} (already exists)`);
+      db.prepare("UPDATE problems SET solution = ?, category = ?, lists = ? WHERE slug = ?").run(solution, category, listsJson, slug);
+      console.log(`  [${i + 1}/${allProblems.length}] ✓ ${slug} (updated)`);
       skipped++;
       continue;
     }
@@ -52,7 +52,9 @@ async function seed() {
         lc.difficulty,
         lc.content,
         solution,
-        JSON.stringify(lc.topicTags.map((t) => t.name))
+        category,
+        JSON.stringify(lc.topicTags.map((t) => t.name)),
+        listsJson
       );
 
       console.log(`  [${i + 1}/${allProblems.length}] ✓ ${lc.title} (${lc.difficulty})`);

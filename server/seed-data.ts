@@ -1,6 +1,7 @@
 export interface SeedProblem {
   slug: string;
   category: string;
+  lists: string[];
   solution: string;
 }
 
@@ -10,6 +11,7 @@ const problems: SeedProblem[] = [
   // ============================================================
   {
     slug: 'two-sum',
+    lists: ['Blind 75', 'Grind 169', 'NeetCode 150'],
     category: 'Arrays & Hashing',
     solution: `**Approach:** Hash Map (one-pass)
 **Key Insight:** For each number, check if (target - num) already exists in a hash map. If yes, return both indices. Otherwise, store the current number and its index.
@@ -22,6 +24,7 @@ const problems: SeedProblem[] = [
   },
   {
     slug: 'contains-duplicate',
+    lists: ['Blind 75', 'Grind 169', 'NeetCode 150'],
     category: 'Arrays & Hashing',
     solution: `**Approach:** Hash Set
 **Key Insight:** Insert each element into a set. If the element is already in the set, we found a duplicate.
@@ -33,6 +36,7 @@ const problems: SeedProblem[] = [
   },
   {
     slug: 'valid-anagram',
+    lists: ['Blind 75', 'Grind 169', 'NeetCode 150'],
     category: 'Arrays & Hashing',
     solution: `**Approach:** Character frequency count
 **Key Insight:** Two strings are anagrams if and only if they have the same character frequencies.
@@ -44,6 +48,7 @@ const problems: SeedProblem[] = [
   },
   {
     slug: 'group-anagrams',
+    lists: ['Blind 75', 'Grind 169', 'NeetCode 150'],
     category: 'Arrays & Hashing',
     solution: `**Approach:** Hash Map with sorted-string key
 **Key Insight:** All anagrams produce the same string when their characters are sorted. Use this sorted string as a hash map key to group them.
@@ -56,6 +61,7 @@ const problems: SeedProblem[] = [
   },
   {
     slug: 'top-k-frequent-elements',
+    lists: ['Blind 75', 'Grind 169', 'NeetCode 150'],
     category: 'Arrays & Hashing',
     solution: `**Approach:** Bucket Sort
 **Key Insight:** Use an array of buckets where index = frequency. Since max frequency is n, we can create n+1 buckets and collect elements from high to low frequency.
@@ -68,6 +74,7 @@ const problems: SeedProblem[] = [
   },
   {
     slug: 'product-of-array-except-self',
+    lists: ['Blind 75', 'Grind 169', 'NeetCode 150'],
     category: 'Arrays & Hashing',
     solution: `**Approach:** Prefix and suffix products (two-pass)
 **Key Insight:** result[i] = product of all elements to the left × product of all elements to the right. We can compute these with two passes without using division.
@@ -78,6 +85,7 @@ const problems: SeedProblem[] = [
   },
   {
     slug: 'longest-consecutive-sequence',
+    lists: ['Blind 75', 'Grind 169', 'NeetCode 150'],
     category: 'Arrays & Hashing',
     solution: `**Approach:** Hash Set
 **Key Insight:** Put all numbers in a set. A number is the start of a sequence only if (num - 1) is NOT in the set. From each start, count consecutive numbers.
@@ -94,6 +102,7 @@ const problems: SeedProblem[] = [
   // ============================================================
   {
     slug: 'valid-palindrome',
+    lists: ['Blind 75', 'Grind 169', 'NeetCode 150'],
     category: 'Two Pointers',
     solution: `**Approach:** Two pointers from both ends
 **Key Insight:** Use left and right pointers, skip non-alphanumeric characters, compare lowercase characters.
@@ -106,6 +115,7 @@ const problems: SeedProblem[] = [
   },
   {
     slug: '3sum',
+    lists: ['Blind 75', 'Grind 169', 'NeetCode 150'],
     category: 'Two Pointers',
     solution: `**Approach:** Sort + Two Pointers
 **Key Insight:** Sort the array. Fix one element, then use two pointers on the remaining subarray to find pairs that sum to the negative of the fixed element. Skip duplicates to avoid repeated triplets.
@@ -118,6 +128,7 @@ const problems: SeedProblem[] = [
   },
   {
     slug: 'container-with-most-water',
+    lists: ['Blind 75', 'Grind 169', 'NeetCode 150'],
     category: 'Two Pointers',
     solution: `**Approach:** Two Pointers (greedy)
 **Key Insight:** Start with the widest container (left=0, right=end). Always move the pointer with the shorter height, because moving the taller one can never increase the area (width decreases and height is bottlenecked by the shorter side).
@@ -134,6 +145,7 @@ const problems: SeedProblem[] = [
   // ============================================================
   {
     slug: 'best-time-to-buy-and-sell-stock',
+    lists: ['Blind 75', 'Grind 169', 'NeetCode 150'],
     category: 'Sliding Window',
     solution: `**Approach:** Single pass — track minimum price
 **Key Insight:** Keep track of the minimum price seen so far. At each day, the max profit if we sell today is price - min_so_far. Track the global max.
@@ -145,6 +157,7 @@ const problems: SeedProblem[] = [
   },
   {
     slug: 'longest-substring-without-repeating-characters',
+    lists: ['Blind 75', 'Grind 169', 'NeetCode 150'],
     category: 'Sliding Window',
     solution: `**Approach:** Sliding window with hash set/map
 **Key Insight:** Maintain a window [left, right] with no duplicate characters. Use a set or map to track characters in the window. When a duplicate is found, shrink from the left.
@@ -156,6 +169,7 @@ const problems: SeedProblem[] = [
   },
   {
     slug: 'longest-repeating-character-replacement',
+    lists: ['Blind 75', 'Grind 169', 'NeetCode 150'],
     category: 'Sliding Window',
     solution: `**Approach:** Sliding window with character count
 **Key Insight:** In a window of size (right - left + 1), if we know the count of the most frequent character (maxFreq), the number of characters we need to replace is windowSize - maxFreq. If this exceeds k, shrink the window.
@@ -169,6 +183,7 @@ const problems: SeedProblem[] = [
   },
   {
     slug: 'minimum-window-substring',
+    lists: ['Blind 75', 'Grind 169', 'NeetCode 150'],
     category: 'Sliding Window',
     solution: `**Approach:** Sliding window with two pointers + frequency maps
 **Key Insight:** Expand the window to include all characters of t, then contract from the left to find the minimum valid window. Use a "have" vs "need" counter to efficiently track when the window is valid.
@@ -185,6 +200,7 @@ const problems: SeedProblem[] = [
   // ============================================================
   {
     slug: 'valid-parentheses',
+    lists: ['Blind 75', 'Grind 169', 'NeetCode 150'],
     category: 'Stack',
     solution: `**Approach:** Stack
 **Key Insight:** Push opening brackets onto the stack. For each closing bracket, check if it matches the top of the stack. If the stack is empty or doesn't match, return false.
@@ -200,6 +216,7 @@ const problems: SeedProblem[] = [
   // ============================================================
   {
     slug: 'find-minimum-in-rotated-sorted-array',
+    lists: ['Blind 75', 'Grind 169', 'NeetCode 150'],
     category: 'Binary Search',
     solution: `**Approach:** Modified Binary Search
 **Key Insight:** Compare mid with right. If nums[mid] > nums[right], the minimum is in the right half. Otherwise, it's in the left half (including mid).
@@ -213,6 +230,7 @@ const problems: SeedProblem[] = [
   },
   {
     slug: 'search-in-rotated-sorted-array',
+    lists: ['Blind 75', 'Grind 169', 'NeetCode 150'],
     category: 'Binary Search',
     solution: `**Approach:** Modified Binary Search
 **Key Insight:** At least one half of the array (divided by mid) is always sorted. Determine which half is sorted and check if the target lies within that sorted half.
@@ -231,6 +249,7 @@ const problems: SeedProblem[] = [
   // ============================================================
   {
     slug: 'reverse-linked-list',
+    lists: ['Blind 75', 'Grind 169', 'NeetCode 150'],
     category: 'Linked List',
     solution: `**Approach:** Iterative — three pointers
 **Key Insight:** Use prev, curr, and next pointers. At each step, reverse the current node's pointer and advance all three.
@@ -243,6 +262,7 @@ const problems: SeedProblem[] = [
   },
   {
     slug: 'merge-two-sorted-lists',
+    lists: ['Blind 75', 'Grind 169', 'NeetCode 150'],
     category: 'Linked List',
     solution: `**Approach:** Iterative merge with dummy head
 **Key Insight:** Use a dummy node to simplify edge cases. Compare heads of both lists, append the smaller one, advance that pointer.
@@ -255,6 +275,7 @@ const problems: SeedProblem[] = [
   },
   {
     slug: 'reorder-list',
+    lists: ['Blind 75', 'Grind 169', 'NeetCode 150'],
     category: 'Linked List',
     solution: `**Approach:** Find middle + Reverse second half + Merge
 **Key Insight:** Split the list into two halves, reverse the second half, then interleave (merge) the two halves.
@@ -266,6 +287,7 @@ const problems: SeedProblem[] = [
   },
   {
     slug: 'remove-nth-node-from-end-of-list',
+    lists: ['Blind 75', 'Grind 169', 'NeetCode 150'],
     category: 'Linked List',
     solution: `**Approach:** Two pointers with n-gap
 **Key Insight:** Advance the "fast" pointer n steps ahead first. Then move both fast and slow together. When fast reaches the end, slow is at the node before the one to remove.
@@ -278,6 +300,7 @@ const problems: SeedProblem[] = [
   },
   {
     slug: 'linked-list-cycle',
+    lists: ['Blind 75', 'Grind 169', 'NeetCode 150'],
     category: 'Linked List',
     solution: `**Approach:** Floyd's Tortoise and Hare
 **Key Insight:** Use a slow pointer (1 step) and fast pointer (2 steps). If there's a cycle, they will eventually meet. If fast reaches null, there's no cycle.
@@ -290,6 +313,7 @@ const problems: SeedProblem[] = [
   },
   {
     slug: 'merge-k-sorted-lists',
+    lists: ['Blind 75', 'Grind 169', 'NeetCode 150'],
     category: 'Linked List',
     solution: `**Approach:** Min-Heap or Divide and Conquer
 **Min-Heap approach:** Push the head of each list into a min-heap. Pop the minimum, append to result, push its next node.
@@ -305,6 +329,7 @@ const problems: SeedProblem[] = [
   // ============================================================
   {
     slug: 'invert-binary-tree',
+    lists: ['Blind 75', 'Grind 169', 'NeetCode 150'],
     category: 'Trees',
     solution: `**Approach:** Recursion (DFS)
 **Key Insight:** Swap left and right children of every node, recursively.
@@ -317,6 +342,7 @@ const problems: SeedProblem[] = [
   },
   {
     slug: 'maximum-depth-of-binary-tree',
+    lists: ['Blind 75', 'Grind 169', 'NeetCode 150'],
     category: 'Trees',
     solution: `**Approach:** Recursion (DFS)
 **Key Insight:** Depth of a tree = 1 + max(depth of left subtree, depth of right subtree).
@@ -328,6 +354,7 @@ const problems: SeedProblem[] = [
   },
   {
     slug: 'same-tree',
+    lists: ['Blind 75', 'Grind 169', 'NeetCode 150'],
     category: 'Trees',
     solution: `**Approach:** Recursive comparison
 **Key Insight:** Two trees are the same if roots have equal values and left/right subtrees are the same.
@@ -339,6 +366,7 @@ const problems: SeedProblem[] = [
   },
   {
     slug: 'subtree-of-another-tree',
+    lists: ['Blind 75', 'Grind 169', 'NeetCode 150'],
     category: 'Trees',
     solution: `**Approach:** Recursive — check isSameTree at every node
 **Key Insight:** For each node in the main tree, check if the subtree rooted there is identical to the target tree using the same-tree comparison.
@@ -350,6 +378,7 @@ const problems: SeedProblem[] = [
   },
   {
     slug: 'lowest-common-ancestor-of-a-binary-search-tree',
+    lists: ['Blind 75', 'Grind 169', 'NeetCode 150'],
     category: 'Trees',
     solution: `**Approach:** Exploit BST property
 **Key Insight:** In a BST, if both p and q are less than current node, LCA is in the left subtree. If both are greater, LCA is in the right subtree. Otherwise, current node is the LCA (the split point).
@@ -362,6 +391,7 @@ const problems: SeedProblem[] = [
   },
   {
     slug: 'binary-tree-level-order-traversal',
+    lists: ['Blind 75', 'Grind 169', 'NeetCode 150'],
     category: 'Trees',
     solution: `**Approach:** BFS with queue
 **Key Insight:** Use a queue. Process all nodes at the current level before moving to the next. The number of nodes to process at each level equals the current queue size.
@@ -373,6 +403,7 @@ const problems: SeedProblem[] = [
   },
   {
     slug: 'validate-binary-search-tree',
+    lists: ['Blind 75', 'Grind 169', 'NeetCode 150'],
     category: 'Trees',
     solution: `**Approach:** Recursion with min/max bounds
 **Key Insight:** Each node must be within a valid range (min, max). The left child must be < current node, and the right child must be > current node. Pass updated bounds down.
@@ -387,6 +418,7 @@ const problems: SeedProblem[] = [
   },
   {
     slug: 'kth-smallest-element-in-a-bst',
+    lists: ['Blind 75', 'Grind 169', 'NeetCode 150'],
     category: 'Trees',
     solution: `**Approach:** In-order traversal
 **Key Insight:** In-order traversal of a BST visits nodes in ascending order. The k-th visited node is the answer.
@@ -398,6 +430,7 @@ const problems: SeedProblem[] = [
   },
   {
     slug: 'construct-binary-tree-from-preorder-and-inorder-traversal',
+    lists: ['Blind 75', 'Grind 169', 'NeetCode 150'],
     category: 'Trees',
     solution: `**Approach:** Recursive construction with hash map
 **Key Insight:** Preorder's first element is the root. Find that root in inorder — everything left of it is the left subtree, everything right is the right subtree. Use a hash map for O(1) lookups in inorder.
@@ -410,6 +443,7 @@ const problems: SeedProblem[] = [
   },
   {
     slug: 'binary-tree-maximum-path-sum',
+    lists: ['Blind 75', 'Grind 169', 'NeetCode 150'],
     category: 'Trees',
     solution: `**Approach:** DFS with global max
 **Key Insight:** At each node, the max "gain" we can contribute to a parent path is node.val + max(left_gain, right_gain, 0). But the max path *through* this node could be node.val + left_gain + right_gain. Track the global max separately.
@@ -422,6 +456,7 @@ const problems: SeedProblem[] = [
   },
   {
     slug: 'serialize-and-deserialize-binary-tree',
+    lists: ['Blind 75', 'Grind 169', 'NeetCode 150'],
     category: 'Trees',
     solution: `**Approach:** Preorder traversal with null markers
 **Key Insight:** Serialize using preorder DFS, recording "null" for null nodes. Deserialize by reading the serialized values in order and reconstructing the tree recursively.
@@ -437,6 +472,7 @@ Deserialize: Split by comma. Use a global index. Read value: if "null", return n
   // ============================================================
   {
     slug: 'implement-trie-prefix-tree',
+    lists: ['Blind 75', 'Grind 169', 'NeetCode 150'],
     category: 'Tries',
     solution: `**Approach:** Tree of nodes, each with children map and end-of-word flag
 **Key Insight:** Each node has a map/array of children (one per character) and a boolean marking if a word ends here.
@@ -448,6 +484,7 @@ StartsWith: same as search but don't check end-of-word.
   },
   {
     slug: 'design-add-and-search-words-data-structure',
+    lists: ['Blind 75', 'Grind 169', 'NeetCode 150'],
     category: 'Tries',
     solution: `**Approach:** Trie with DFS for wildcard '.'
 **Key Insight:** Build a standard trie. For search, when encountering '.', try all children via DFS/backtracking.
@@ -458,6 +495,7 @@ search: for each char, if it's '.', recursively search all children. Otherwise, 
   },
   {
     slug: 'word-search-ii',
+    lists: ['Blind 75', 'Grind 169', 'NeetCode 150'],
     category: 'Tries',
     solution: `**Approach:** Trie + Backtracking on the board
 **Key Insight:** Build a trie from the word list. Then DFS/backtrack from each cell on the board, following trie edges. This is much faster than searching for each word independently.
@@ -474,6 +512,7 @@ search: for each char, if it's '.', recursively search all children. Otherwise, 
   // ============================================================
   {
     slug: 'find-median-from-data-stream',
+    lists: ['Blind 75', 'Grind 169', 'NeetCode 150'],
     category: 'Heap',
     solution: `**Approach:** Two heaps — max-heap for lower half, min-heap for upper half
 **Key Insight:** Maintain a max-heap (left half) and min-heap (right half). The median is either the top of the max-heap (odd count) or the average of both tops (even count). Balance the heaps so their sizes differ by at most 1.
@@ -488,6 +527,7 @@ findMedian: if sizes equal, average both tops. Else, return max-heap top.
   // ============================================================
   {
     slug: 'combination-sum',
+    lists: ['Blind 75', 'Grind 169', 'NeetCode 150'],
     category: 'Backtracking',
     solution: `**Approach:** Backtracking with reuse
 **Key Insight:** At each step, try adding each candidate (starting from the current index to avoid duplicate combinations). The same number can be used unlimited times. Backtrack when the remaining target goes below 0.
@@ -500,6 +540,7 @@ findMedian: if sizes equal, average both tops. Else, return max-heap top.
   },
   {
     slug: 'word-search',
+    lists: ['Blind 75', 'Grind 169', 'NeetCode 150'],
     category: 'Backtracking',
     solution: `**Approach:** DFS/Backtracking on the grid
 **Key Insight:** From each cell, try to match the word character by character using DFS in 4 directions. Mark cells as visited during the current path to avoid reuse.
@@ -516,6 +557,7 @@ findMedian: if sizes equal, average both tops. Else, return max-heap top.
   // ============================================================
   {
     slug: 'number-of-islands',
+    lists: ['Blind 75', 'Grind 169', 'NeetCode 150'],
     category: 'Graphs',
     solution: `**Approach:** DFS/BFS flood fill
 **Key Insight:** Iterate through the grid. When we find a '1', increment the island count and flood-fill (mark all connected '1's as visited using DFS or BFS).
@@ -527,6 +569,7 @@ findMedian: if sizes equal, average both tops. Else, return max-heap top.
   },
   {
     slug: 'clone-graph',
+    lists: ['Blind 75', 'Grind 169', 'NeetCode 150'],
     category: 'Graphs',
     solution: `**Approach:** BFS or DFS with hash map
 **Key Insight:** Use a hash map: original node → cloned node. For each node, create its clone and recursively/iteratively clone its neighbors.
@@ -538,6 +581,7 @@ findMedian: if sizes equal, average both tops. Else, return max-heap top.
   },
   {
     slug: 'pacific-atlantic-water-flow',
+    lists: ['Blind 75', 'Grind 169', 'NeetCode 150'],
     category: 'Graphs',
     solution: `**Approach:** Reverse BFS/DFS from ocean borders
 **Key Insight:** Instead of flowing water downhill from each cell, reverse the problem: start from ocean borders and flow uphill (to cells with height ≥ current). Find cells reachable from both oceans.
@@ -549,6 +593,7 @@ findMedian: if sizes equal, average both tops. Else, return max-heap top.
   },
   {
     slug: 'course-schedule',
+    lists: ['Blind 75', 'Grind 169', 'NeetCode 150'],
     category: 'Graphs',
     solution: `**Approach:** Topological Sort (BFS/Kahn's) or DFS cycle detection
 **Key Insight:** The courses form a directed graph. If there's a cycle, it's impossible to finish all courses. Use topological sort — if all nodes are processed, no cycle exists.
@@ -561,6 +606,7 @@ findMedian: if sizes equal, average both tops. Else, return max-heap top.
   },
   {
     slug: 'course-schedule-ii',
+    lists: ['Blind 75', 'Grind 169', 'NeetCode 150'],
     category: 'Graphs',
     solution: `**Approach:** Topological Sort (Kahn's BFS)
 **Key Insight:** Same as Course Schedule I, but collect the processing order. If a valid ordering exists (no cycle), return it.
@@ -577,6 +623,7 @@ findMedian: if sizes equal, average both tops. Else, return max-heap top.
   // ============================================================
   {
     slug: 'climbing-stairs',
+    lists: ['Blind 75', 'Grind 169', 'NeetCode 150'],
     category: '1-D DP',
     solution: `**Approach:** DP (Fibonacci-like)
 **Key Insight:** To reach step n, you can come from step n-1 (1 step) or n-2 (2 steps). So dp[n] = dp[n-1] + dp[n-2]. This is the Fibonacci sequence.
@@ -589,6 +636,7 @@ findMedian: if sizes equal, average both tops. Else, return max-heap top.
   },
   {
     slug: 'house-robber',
+    lists: ['Blind 75', 'Grind 169', 'NeetCode 150'],
     category: '1-D DP',
     solution: `**Approach:** DP — rob or skip
 **Key Insight:** At each house, choose to rob it (add its value to the loot from two houses back) or skip it (keep the loot from the previous house). dp[i] = max(dp[i-1], dp[i-2] + nums[i]).
@@ -601,6 +649,7 @@ findMedian: if sizes equal, average both tops. Else, return max-heap top.
   },
   {
     slug: 'house-robber-ii',
+    lists: ['Blind 75', 'Grind 169', 'NeetCode 150'],
     category: '1-D DP',
     solution: `**Approach:** Two passes of House Robber I
 **Key Insight:** Houses are in a circle, so house 0 and house n-1 are adjacent. Run House Robber I on nums[0..n-2] and nums[1..n-1], take the max.
@@ -612,6 +661,7 @@ findMedian: if sizes equal, average both tops. Else, return max-heap top.
   },
   {
     slug: 'longest-palindromic-substring',
+    lists: ['Blind 75', 'Grind 169', 'NeetCode 150'],
     category: '1-D DP',
     solution: `**Approach:** Expand around center
 **Key Insight:** A palindrome can be expanded from its center. For each position, try expanding from that center (both odd-length and even-length palindromes). Track the longest found.
@@ -623,6 +673,7 @@ findMedian: if sizes equal, average both tops. Else, return max-heap top.
   },
   {
     slug: 'palindromic-substrings',
+    lists: ['Blind 75', 'Grind 169', 'NeetCode 150'],
     category: '1-D DP',
     solution: `**Approach:** Expand around center
 **Key Insight:** Same technique as Longest Palindromic Substring. For each center, expand and count each valid expansion as a palindrome.
@@ -634,6 +685,7 @@ findMedian: if sizes equal, average both tops. Else, return max-heap top.
   },
   {
     slug: 'decode-ways',
+    lists: ['Blind 75', 'Grind 169', 'NeetCode 150'],
     category: '1-D DP',
     solution: `**Approach:** DP
 **Key Insight:** At each position, we can decode one digit (if non-zero) or two digits (if they form 10-26). dp[i] = dp[i-1] (if s[i] != '0') + dp[i-2] (if s[i-1..i] is 10-26).
@@ -645,6 +697,7 @@ findMedian: if sizes equal, average both tops. Else, return max-heap top.
   },
   {
     slug: 'coin-change',
+    lists: ['Blind 75', 'Grind 169', 'NeetCode 150'],
     category: '1-D DP',
     solution: `**Approach:** Bottom-up DP
 **Key Insight:** dp[amount] = minimum coins to make that amount. For each amount, try every coin: dp[a] = min(dp[a], dp[a - coin] + 1).
@@ -656,6 +709,7 @@ findMedian: if sizes equal, average both tops. Else, return max-heap top.
   },
   {
     slug: 'maximum-product-subarray',
+    lists: ['Blind 75', 'Grind 169', 'NeetCode 150'],
     category: '1-D DP',
     solution: `**Approach:** Track both max and min products
 **Key Insight:** A negative number can turn the minimum product into the maximum. So track both the running max and running min product ending at each position.
@@ -668,6 +722,7 @@ findMedian: if sizes equal, average both tops. Else, return max-heap top.
   },
   {
     slug: 'word-break',
+    lists: ['Blind 75', 'Grind 169', 'NeetCode 150'],
     category: '1-D DP',
     solution: `**Approach:** DP with word dictionary
 **Key Insight:** dp[i] = true if s[0..i-1] can be segmented into dictionary words. Check all possible last words: dp[i] = any(dp[j] and s[j..i] in wordDict) for j < i.
@@ -680,6 +735,7 @@ findMedian: if sizes equal, average both tops. Else, return max-heap top.
   },
   {
     slug: 'longest-increasing-subsequence',
+    lists: ['Blind 75', 'Grind 169', 'NeetCode 150'],
     category: '1-D DP',
     solution: `**Approach:** DP with binary search (Patience Sorting)
 **Simple DP:** dp[i] = length of LIS ending at index i. For each j < i, if nums[j] < nums[i], dp[i] = max(dp[i], dp[j]+1). O(n²).
@@ -695,6 +751,7 @@ findMedian: if sizes equal, average both tops. Else, return max-heap top.
   // ============================================================
   {
     slug: 'unique-paths',
+    lists: ['Blind 75', 'Grind 169', 'NeetCode 150'],
     category: '2-D DP',
     solution: `**Approach:** DP grid
 **Key Insight:** dp[i][j] = number of ways to reach (i, j). You can only come from above or from the left: dp[i][j] = dp[i-1][j] + dp[i][j-1].
@@ -708,6 +765,7 @@ findMedian: if sizes equal, average both tops. Else, return max-heap top.
   },
   {
     slug: 'longest-common-subsequence',
+    lists: ['Blind 75', 'Grind 169', 'NeetCode 150'],
     category: '2-D DP',
     solution: `**Approach:** 2D DP table
 **Key Insight:** dp[i][j] = LCS length of text1[0..i-1] and text2[0..j-1]. If characters match, dp[i][j] = dp[i-1][j-1] + 1. Otherwise, dp[i][j] = max(dp[i-1][j], dp[i][j-1]).
@@ -723,6 +781,7 @@ findMedian: if sizes equal, average both tops. Else, return max-heap top.
   // ============================================================
   {
     slug: 'maximum-subarray',
+    lists: ['Blind 75', 'Grind 169', 'NeetCode 150'],
     category: 'Greedy',
     solution: `**Approach:** Kadane's Algorithm
 **Key Insight:** At each position, decide whether to extend the current subarray or start a new one. If the running sum is negative, starting fresh is better.
@@ -735,6 +794,7 @@ findMedian: if sizes equal, average both tops. Else, return max-heap top.
   },
   {
     slug: 'jump-game',
+    lists: ['Blind 75', 'Grind 169', 'NeetCode 150'],
     category: 'Greedy',
     solution: `**Approach:** Greedy — track max reachable index
 **Key Insight:** Maintain the farthest index you can reach. Iterate through the array; if current index exceeds max reachable, return false. Otherwise update max reachable.
@@ -750,6 +810,7 @@ findMedian: if sizes equal, average both tops. Else, return max-heap top.
   // ============================================================
   {
     slug: 'insert-interval',
+    lists: ['Blind 75', 'Grind 169', 'NeetCode 150'],
     category: 'Intervals',
     solution: `**Approach:** Linear scan — add before, merge overlapping, add after
 **Key Insight:** Split intervals into three groups: those entirely before the new interval, those overlapping (merge them), and those entirely after.
@@ -762,6 +823,7 @@ findMedian: if sizes equal, average both tops. Else, return max-heap top.
   },
   {
     slug: 'merge-intervals',
+    lists: ['Blind 75', 'Grind 169', 'NeetCode 150'],
     category: 'Intervals',
     solution: `**Approach:** Sort by start, then merge
 **Key Insight:** Sort intervals by start time. Iterate and merge if the current interval overlaps with the last one in the result (i.e., current.start <= last.end).
@@ -773,6 +835,7 @@ findMedian: if sizes equal, average both tops. Else, return max-heap top.
   },
   {
     slug: 'non-overlapping-intervals',
+    lists: ['Blind 75', 'Grind 169', 'NeetCode 150'],
     category: 'Intervals',
     solution: `**Approach:** Greedy — sort by end time
 **Key Insight:** Sort by end time. Greedily keep intervals that don't overlap (classic activity selection). The number of removals = total - number of non-overlapping intervals kept.
@@ -788,6 +851,7 @@ findMedian: if sizes equal, average both tops. Else, return max-heap top.
   // ============================================================
   {
     slug: 'rotate-image',
+    lists: ['Blind 75', 'Grind 169', 'NeetCode 150'],
     category: 'Math & Geometry',
     solution: `**Approach:** Transpose then reverse each row
 **Key Insight:** A 90° clockwise rotation = transpose the matrix (swap rows and columns) + reverse each row.
@@ -799,6 +863,7 @@ findMedian: if sizes equal, average both tops. Else, return max-heap top.
   },
   {
     slug: 'spiral-matrix',
+    lists: ['Blind 75', 'Grind 169', 'NeetCode 150'],
     category: 'Math & Geometry',
     solution: `**Approach:** Boundary simulation
 **Key Insight:** Maintain four boundaries (top, bottom, left, right). Traverse right along top row, down along right column, left along bottom row, up along left column. Shrink boundaries after each pass.
@@ -813,6 +878,7 @@ findMedian: if sizes equal, average both tops. Else, return max-heap top.
   },
   {
     slug: 'set-matrix-zeroes',
+    lists: ['Blind 75', 'Grind 169', 'NeetCode 150'],
     category: 'Math & Geometry',
     solution: `**Approach:** Use first row/column as markers
 **Key Insight:** Instead of extra space, use the first row and first column to mark which rows/columns should be zeroed. Track separately whether the first row/column themselves should be zeroed.
@@ -829,6 +895,7 @@ findMedian: if sizes equal, average both tops. Else, return max-heap top.
   // ============================================================
   {
     slug: 'number-of-1-bits',
+    lists: ['Blind 75', 'Grind 169', 'NeetCode 150'],
     category: 'Bit Manipulation',
     solution: `**Approach:** Brian Kernighan's trick: n & (n-1) removes the lowest set bit
 **Key Insight:** n & (n-1) flips the lowest set bit to 0. Count how many times we can do this until n becomes 0.
@@ -840,6 +907,7 @@ findMedian: if sizes equal, average both tops. Else, return max-heap top.
   },
   {
     slug: 'counting-bits',
+    lists: ['Blind 75', 'Grind 169', 'NeetCode 150'],
     category: 'Bit Manipulation',
     solution: `**Approach:** DP using dp[i] = dp[i >> 1] + (i & 1)
 **Key Insight:** The number of 1-bits in i equals the number in i/2 (right shift) plus the last bit. Or use dp[i] = dp[i & (i-1)] + 1.
@@ -851,6 +919,7 @@ findMedian: if sizes equal, average both tops. Else, return max-heap top.
   },
   {
     slug: 'reverse-bits',
+    lists: ['Blind 75', 'Grind 169', 'NeetCode 150'],
     category: 'Bit Manipulation',
     solution: `**Approach:** Bit-by-bit reversal
 **Key Insight:** Extract the last bit of n, shift it into the result from the left. Repeat 32 times.
@@ -862,6 +931,7 @@ findMedian: if sizes equal, average both tops. Else, return max-heap top.
   },
   {
     slug: 'missing-number',
+    lists: ['Blind 75', 'Grind 169', 'NeetCode 150'],
     category: 'Bit Manipulation',
     solution: `**Approach:** XOR or Math (sum formula)
 **XOR:** XOR all numbers 0..n and XOR all elements in the array. The result is the missing number (all pairs cancel out).
@@ -874,6 +944,7 @@ findMedian: if sizes equal, average both tops. Else, return max-heap top.
   },
   {
     slug: 'sum-of-two-integers',
+    lists: ['Blind 75', 'Grind 169', 'NeetCode 150'],
     category: 'Bit Manipulation',
     solution: `**Approach:** Bit manipulation — XOR for sum, AND+shift for carry
 **Key Insight:** a XOR b gives the sum without carries. (a AND b) << 1 gives the carries. Repeat until carry is 0.
@@ -892,6 +963,7 @@ findMedian: if sizes equal, average both tops. Else, return max-heap top.
   // ============================================================
   {
     slug: 'trapping-rain-water',
+    lists: ['Blind 75', 'Grind 169', 'NeetCode 150'],
     category: 'Two Pointers',
     solution: `**Approach:** Two Pointers
 **Key Insight:** Water at position i = min(max_left, max_right) - height[i]. Use two pointers from both ends, tracking the max heights seen from each side. Process the side with the smaller max.
@@ -904,6 +976,7 @@ findMedian: if sizes equal, average both tops. Else, return max-heap top.
   },
   {
     slug: 'median-of-two-sorted-arrays',
+    lists: ['Blind 75', 'Grind 169', 'NeetCode 150'],
     category: 'Binary Search',
     solution: `**Approach:** Binary search on the smaller array
 **Key Insight:** We need to partition both arrays such that all left elements ≤ all right elements. Binary search on the smaller array's partition point. For a valid partition: maxLeft1 ≤ minRight2 and maxLeft2 ≤ minRight1.
@@ -916,6 +989,7 @@ findMedian: if sizes equal, average both tops. Else, return max-heap top.
   },
   {
     slug: 'lru-cache',
+    lists: ['Blind 75', 'Grind 169', 'NeetCode 150'],
     category: 'Design',
     solution: `**Approach:** Hash Map + Doubly Linked List
 **Key Insight:** Use a hash map for O(1) lookups and a doubly linked list for O(1) insert/remove to maintain access order. Most recently used goes to the front; evict from the back.
@@ -927,6 +1001,7 @@ put: if key exists, update value, move to front. If new key and at capacity, rem
   },
   {
     slug: 'daily-temperatures',
+    lists: ['Blind 75', 'Grind 169', 'NeetCode 150'],
     category: 'Stack',
     solution: `**Approach:** Monotonic decreasing stack
 **Key Insight:** Use a stack that stores indices of temperatures in decreasing order. When a warmer temperature is found, pop all cooler indices and compute the wait days.
@@ -939,6 +1014,7 @@ put: if key exists, update value, move to front. If new key and at capacity, rem
   },
   {
     slug: 'task-scheduler',
+    lists: ['Blind 75', 'Grind 169', 'NeetCode 150'],
     category: 'Greedy',
     solution: `**Approach:** Math / Greedy — count the most frequent task
 **Key Insight:** The most frequent task determines the minimum time. Arrange in frames of size (n+1). Total = (maxFreq - 1) * (n + 1) + count_of_tasks_with_maxFreq. Answer = max(this value, total tasks).

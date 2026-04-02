@@ -15,7 +15,9 @@ db.exec(`
     difficulty TEXT NOT NULL,
     content TEXT NOT NULL,
     solution TEXT DEFAULT '',
+    category TEXT DEFAULT '',
     topics TEXT DEFAULT '[]',
+    lists TEXT DEFAULT '[]',
     added_at TEXT DEFAULT (datetime('now'))
   );
 

@@ -7,7 +7,9 @@ export interface Problem {
   slug: string;
   difficulty: string;
   content: string;
+  category: string;
   topics: string;
+  lists: string;
   added_at: string;
   last_reviewed: string | null;
   last_score: number | null;
