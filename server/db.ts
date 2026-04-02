@@ -94,6 +94,17 @@ db.exec(`
 
   CREATE INDEX IF NOT EXISTS idx_reviews_item ON reviews(item_type, item_id);
   CREATE INDEX IF NOT EXISTS idx_reviews_reviewed_at ON reviews(reviewed_at);
+
+  -- ============================================================
+  -- Settings (key-value store)
+  -- ============================================================
+  CREATE TABLE IF NOT EXISTS settings (
+    key TEXT PRIMARY KEY,
+    value TEXT NOT NULL
+  );
+
+  -- Default provider
+  INSERT OR IGNORE INTO settings (key, value) VALUES ('llm_provider', 'claude-cli');
 `);
 
 export default db;

@@ -129,4 +129,27 @@ export const api = {
     }),
   getReviewHistory: (itemType: ItemType, itemId: number) =>
     request<Review[]>(`/api/reviews/${itemType}/${itemId}`),
+
+  // Settings
+  getSettings: () => request<Settings>('/api/settings'),
+  updateSettings: (s: Partial<SettingsUpdate>) => request<{ ok: boolean }>('/api/settings', {
+    method: 'PUT', body: JSON.stringify(s),
+  }),
 };
+
+export interface Settings {
+  providers: { id: string; name: string; needsApiKey: boolean }[];
+  active_provider: string;
+  openai_api_key: string;
+  openai_model: string;
+  gemini_api_key: string;
+  gemini_model: string;
+}
+
+export interface SettingsUpdate {
+  active_provider: string;
+  openai_api_key: string;
+  openai_model: string;
+  gemini_api_key: string;
+  gemini_model: string;
+}

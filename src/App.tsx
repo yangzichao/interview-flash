@@ -7,9 +7,10 @@ import AlgoReview from './components/AlgoReview'
 import BehavioralReview from './components/BehavioralReview'
 import OODReview from './components/OODReview'
 import SystemDesignReview from './components/SystemDesignReview'
+import SettingsPage from './components/SettingsPage'
 import type { Algorithm, BehavioralQuestion, OODProblem, SystemDesignProblem } from './lib/api'
 
-type Tab = 'algorithm' | 'behavioral' | 'ood' | 'system-design'
+type Tab = 'algorithm' | 'behavioral' | 'ood' | 'system-design' | 'settings'
 
 type View =
   | { type: 'list' }
@@ -23,6 +24,7 @@ const tabs: { key: Tab; label: string }[] = [
   { key: 'behavioral', label: 'Behavioral' },
   { key: 'ood', label: 'OOD' },
   { key: 'system-design', label: 'System Design' },
+  { key: 'settings', label: 'Settings' },
 ]
 
 export default function App() {
@@ -84,6 +86,7 @@ export default function App() {
         {view.type === 'list' && activeTab === 'system-design' && (
           <SystemDesignList onReview={(item) => setView({ type: 'sd-review', item })} />
         )}
+        {view.type === 'list' && activeTab === 'settings' && <SettingsPage />}
         {view.type === 'algo-review' && <AlgoReview item={view.item} onBack={goBack} />}
         {view.type === 'behavioral-review' && <BehavioralReview item={view.item} onBack={goBack} />}
         {view.type === 'ood-review' && <OODReview item={view.item} onBack={goBack} />}

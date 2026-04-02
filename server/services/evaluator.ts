@@ -1,35 +1,8 @@
-import { spawn } from 'child_process';
+import { runLLM } from './llm.js';
 
 interface EvaluationResult {
   score: number;
   evaluation: string;
-}
-
-function runClaude(prompt: string): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const proc = spawn('/opt/homebrew/bin/claude', ['-p', '--output-format', 'text'], {
-      stdio: ['pipe', 'pipe', 'pipe'],
-      env: { ...process.env, PATH: process.env.PATH },
-    });
-
-    let stdout = '';
-    let stderr = '';
-
-    proc.stdout.on('data', (d: Buffer) => { stdout += d.toString(); });
-    proc.stderr.on('data', (d: Buffer) => { stderr += d.toString(); });
-
-    proc.on('close', (code) => {
-      if (code !== 0) reject(new Error(stderr || stdout || `claude exited with code ${code}`));
-      else resolve(stdout.trim());
-    });
-
-    proc.on('error', (err) => {
-      reject(new Error(`Failed to spawn claude: ${err.message}`));
-    });
-
-    proc.stdin.write(prompt);
-    proc.stdin.end();
-  });
 }
 
 const ALGO_SYSTEM = `You are an interview prep coach evaluating a student's recall of algorithm problems.
@@ -224,7 +197,7 @@ ${referenceSolution}
 
 ${studentSection}`;
 
-  const text = await runClaude(prompt);
+  const text = await runLLM(prompt);
 
   const scoreMatch = text.match(/SCORE:\s*(\d)/);
   const score = scoreMatch ? parseInt(scoreMatch[1], 10) : 3;
