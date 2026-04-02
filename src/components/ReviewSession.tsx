@@ -5,6 +5,107 @@ import { api, type Problem, type Review } from '../lib/api'
 const scoreColors = ['', 'text-red-400', 'text-orange-400', 'text-amber-400', 'text-lime-400', 'text-emerald-400']
 const scoreLabels = ['', 'No recall', 'Weak', 'Partial', 'Strong', 'Perfect']
 
+const sectionIcons: Record<string, string> = {
+  'Verdict': '!',
+  'Thought Process': '?',
+  'Tricky Parts': '!',
+  'Suggestions': '>',
+  'Follow-up Questions': '?',
+}
+
+const sectionColors: Record<string, string> = {
+  'Verdict': 'border-emerald-500/30',
+  'Thought Process': 'border-blue-500/30',
+  'Tricky Parts': 'border-amber-500/30',
+  'Suggestions': 'border-violet-500/30',
+  'Follow-up Questions': 'border-cyan-500/30',
+}
+
+const sectionHeaderColors: Record<string, string> = {
+  'Verdict': 'text-emerald-400',
+  'Thought Process': 'text-blue-400',
+  'Tricky Parts': 'text-amber-400',
+  'Suggestions': 'text-violet-400',
+  'Follow-up Questions': 'text-cyan-400',
+}
+
+function parseSections(evaluation: string): { title: string; content: string }[] {
+  const sections: { title: string; content: string }[] = []
+  const parts = evaluation.split(/^## /m).filter(Boolean)
+  for (const part of parts) {
+    const newlineIdx = part.indexOf('\n')
+    if (newlineIdx === -1) continue
+    const title = part.slice(0, newlineIdx).trim()
+    const content = part.slice(newlineIdx + 1).trim()
+    if (content) sections.push({ title, content })
+  }
+  return sections
+}
+
+function EvaluationDisplay({ result, onReset, onBack }: { result: Review; onReset: () => void; onBack: () => void }) {
+  const sections = parseSections(result.evaluation)
+
+  return (
+    <div className="space-y-4">
+      {/* Score banner */}
+      <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-6 flex items-center gap-4">
+        <span className={`text-4xl font-bold ${scoreColors[result.score]}`}>
+          {result.score}/5
+        </span>
+        <div>
+          <span className={`text-lg font-semibold ${scoreColors[result.score]}`}>
+            {scoreLabels[result.score]}
+          </span>
+          <p className="text-xs text-zinc-500 mt-0.5">Recall score</p>
+        </div>
+      </div>
+
+      {/* Sections */}
+      {sections.map((s, i) => (
+        <div key={i} className={`bg-zinc-900 border-l-2 ${sectionColors[s.title] || 'border-zinc-700'} border border-zinc-800 rounded-lg p-5`}>
+          <h3 className={`text-sm font-semibold mb-3 ${sectionHeaderColors[s.title] || 'text-zinc-300'}`}>
+            {s.title}
+          </h3>
+          <div className="prose prose-invert prose-sm max-w-none">
+            <ReactMarkdown>{s.content}</ReactMarkdown>
+          </div>
+        </div>
+      ))}
+
+      {/* If no sections parsed, fall back to raw markdown */}
+      {sections.length === 0 && (
+        <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-5">
+          <div className="prose prose-invert prose-sm max-w-none">
+            <ReactMarkdown>{result.evaluation}</ReactMarkdown>
+          </div>
+        </div>
+      )}
+
+      {/* Your answer */}
+      <div className="bg-zinc-900/50 border border-zinc-800 rounded-lg p-4">
+        <h4 className="text-xs text-zinc-500 uppercase tracking-wider mb-2">Your Answer</h4>
+        <p className="text-sm text-zinc-400 whitespace-pre-wrap">{result.user_answer}</p>
+      </div>
+
+      {/* Actions */}
+      <div className="flex gap-3">
+        <button
+          onClick={onReset}
+          className="bg-emerald-600 hover:bg-emerald-500 px-5 py-2.5 rounded-lg text-sm font-medium transition-colors"
+        >
+          Try Again
+        </button>
+        <button
+          onClick={onBack}
+          className="bg-zinc-800 hover:bg-zinc-700 px-5 py-2.5 rounded-lg text-sm font-medium transition-colors"
+        >
+          Back to Problems
+        </button>
+      </div>
+    </div>
+  )
+}
+
 function HistoryEntry({ review }: { review: Review }) {
   const [expanded, setExpanded] = useState(false)
 
@@ -147,41 +248,7 @@ export default function ReviewSession({ problem, onBack }: { problem: Problem; o
         </div>
       ) : (
         /* Evaluation result */
-        <div>
-          <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-6 mb-6">
-            <div className="flex items-center gap-3 mb-4">
-              <span className={`text-3xl font-bold ${scoreColors[result.score]}`}>
-                {result.score}/5
-              </span>
-              <span className={`text-sm ${scoreColors[result.score]}`}>
-                {scoreLabels[result.score]}
-              </span>
-            </div>
-            <div className="prose prose-invert prose-sm max-w-none">
-              <ReactMarkdown>{result.evaluation}</ReactMarkdown>
-            </div>
-          </div>
-
-          <div className="bg-zinc-900/50 border border-zinc-800 rounded-lg p-4 mb-6">
-            <h4 className="text-xs text-zinc-500 uppercase tracking-wider mb-2">Your Answer</h4>
-            <p className="text-sm text-zinc-400 whitespace-pre-wrap">{result.user_answer}</p>
-          </div>
-
-          <div className="flex gap-3">
-            <button
-              onClick={reset}
-              className="bg-emerald-600 hover:bg-emerald-500 px-5 py-2.5 rounded-lg text-sm font-medium transition-colors"
-            >
-              Try Again
-            </button>
-            <button
-              onClick={onBack}
-              className="bg-zinc-800 hover:bg-zinc-700 px-5 py-2.5 rounded-lg text-sm font-medium transition-colors"
-            >
-              Back to Problems
-            </button>
-          </div>
-        </div>
+        <EvaluationDisplay result={result} onReset={reset} onBack={onBack} />
       )}
 
       {/* Review history */}
