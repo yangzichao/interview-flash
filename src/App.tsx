@@ -16,7 +16,7 @@ export default function App() {
             className="text-xl font-bold tracking-tight cursor-pointer hover:text-emerald-400 transition-colors"
             onClick={() => setView({ type: 'list' })}
           >
-            ⚡ LeetCode Flash
+            ⚡ Interview Flash
           </h1>
           {view.type === 'review' && (
             <button

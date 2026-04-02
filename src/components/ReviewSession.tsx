@@ -19,6 +19,7 @@ const sectionColors: Record<string, string> = {
   'Tricky Parts': 'border-amber-500/30',
   'Suggestions': 'border-violet-500/30',
   'Follow-up Questions': 'border-cyan-500/30',
+  'STAR Analysis': 'border-blue-500/30',
 }
 
 const sectionHeaderColors: Record<string, string> = {
@@ -27,6 +28,7 @@ const sectionHeaderColors: Record<string, string> = {
   'Tricky Parts': 'text-amber-400',
   'Suggestions': 'text-violet-400',
   'Follow-up Questions': 'text-cyan-400',
+  'STAR Analysis': 'text-blue-400',
 }
 
 function parseSections(evaluation: string): { title: string; content: string }[] {

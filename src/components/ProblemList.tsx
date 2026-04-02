@@ -12,6 +12,9 @@ const listColors: Record<string, string> = {
   'Grind 169': 'bg-blue-500/20 text-blue-400 border-blue-500/30',
   'NeetCode 150': 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
   'Top Interview': 'bg-amber-500/20 text-amber-400 border-amber-500/30',
+  'Behavioral': 'bg-pink-500/20 text-pink-400 border-pink-500/30',
+  'OOD': 'bg-sky-500/20 text-sky-400 border-sky-500/30',
+  'System Design': 'bg-orange-500/20 text-orange-400 border-orange-500/30',
 }
 
 function scoreLabel(score: number | null) {
@@ -102,7 +105,7 @@ export default function ProblemList({ onReview }: { onReview: (p: Problem) => vo
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && addProblem()}
-            placeholder="LeetCode slug, URL, or title (e.g. two-sum)"
+            placeholder="Problem slug, URL, or title (e.g. two-sum)"
             className="flex-1 bg-zinc-900 border border-zinc-700 rounded-lg px-4 py-2.5 text-sm placeholder:text-zinc-500 focus:outline-none focus:border-emerald-500 transition-colors"
           />
           <button
@@ -119,7 +122,7 @@ export default function ProblemList({ onReview }: { onReview: (p: Problem) => vo
       {problems.length === 0 ? (
         <div className="text-center py-16 text-zinc-500">
           <p className="text-lg mb-2">No problems yet</p>
-          <p className="text-sm">Add a LeetCode problem to start reviewing</p>
+          <p className="text-sm">Add a problem to start reviewing</p>
         </div>
       ) : (
         <div>

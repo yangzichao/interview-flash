@@ -19,7 +19,8 @@ router.post('/', async (req, res) => {
       problem.title,
       problem.content,
       problem.solution || '',
-      user_answer
+      user_answer,
+      problem.category || ''
     );
 
     const stmt = db.prepare(`
