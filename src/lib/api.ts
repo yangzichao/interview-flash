@@ -119,6 +119,14 @@ export const api = {
   getSystemDesign: () => request<SystemDesignProblem[]>('/api/system-design'),
   getSystemDesignById: (id: number) => request<SystemDesignProblem>(`/api/system-design/${id}`),
   getSystemDesignRequirements: (id: number) => request<{ functional_reqs: string[]; non_functional_reqs: string[] }>(`/api/system-design/${id}/requirements`),
+  getStepFeedback: (id: number, step_key: string, step_label: string, user_answer: string, previous_steps?: Record<string, string>) =>
+    request<{ feedback: string }>(`/api/system-design/${id}/step-feedback`, {
+      method: 'POST', body: JSON.stringify({ step_key, step_label, user_answer, previous_steps }),
+    }),
+  sendInterviewChat: (id: number, messages: { role: string; content: string }[]) =>
+    request<{ reply: string }>(`/api/system-design/${id}/chat`, {
+      method: 'POST', body: JSON.stringify({ messages }),
+    }),
   deleteSystemDesign: (id: number) => request<{ ok: boolean }>(`/api/system-design/${id}`, { method: 'DELETE' }),
 
   // Reviews (unified)
