@@ -1,22 +1,16 @@
 import { Router } from 'express';
 import db from '../db.js';
 import { fetchProblem, slugFromInput } from '../services/leetcode.js';
+import { getItemsWithReviewData, getItemById, deleteItem } from '../services/queries.js';
 
 const router = Router();
 
 router.get('/', (_req, res) => {
-  const rows = db.prepare(`
-    SELECT a.*,
-      (SELECT MAX(r.reviewed_at) FROM reviews r WHERE r.item_type = 'algorithm' AND r.item_id = a.id) as last_reviewed,
-      (SELECT r.score FROM reviews r WHERE r.item_type = 'algorithm' AND r.item_id = a.id ORDER BY r.reviewed_at DESC LIMIT 1) as last_score
-    FROM algorithms a
-    ORDER BY last_reviewed ASC NULLS FIRST
-  `).all();
-  res.json(rows);
+  res.json(getItemsWithReviewData('algorithm'));
 });
 
 router.get('/:id', (req, res) => {
-  const row = db.prepare('SELECT * FROM algorithms WHERE id = ?').get(req.params.id);
+  const row = getItemById('algorithm', req.params.id);
   if (!row) return res.status(404).json({ error: 'Not found' });
   res.json(row);
 });
@@ -41,8 +35,7 @@ router.post('/', async (req, res) => {
 });
 
 router.delete('/:id', (req, res) => {
-  db.prepare('DELETE FROM reviews WHERE item_type = ? AND item_id = ?').run('algorithm', req.params.id);
-  db.prepare('DELETE FROM algorithms WHERE id = ?').run(req.params.id);
+  deleteItem('algorithm', req.params.id);
   res.json({ ok: true });
 });
 

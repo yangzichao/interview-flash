@@ -9,7 +9,8 @@ import OODReview from './components/OODReview'
 import SystemDesignReview from './components/SystemDesignReview'
 import Dashboard from './components/Dashboard'
 import SettingsPage from './components/SettingsPage'
-import { api, type Algorithm, type BehavioralQuestion, type OODProblem, type SystemDesignProblem } from './lib/api'
+import ErrorBoundary from './components/ErrorBoundary'
+import { api, getErrorMessage, type Algorithm, type BehavioralQuestion, type OODProblem, type SystemDesignProblem } from './lib/api'
 
 type Tab = 'dashboard' | 'algorithm' | 'behavioral' | 'ood' | 'system-design' | 'settings'
 
@@ -51,8 +52,8 @@ export default function App() {
         const item = await api.getSystemDesignById(itemId)
         setView({ type: 'sd-review', item })
       }
-    } catch (e: any) {
-      alert(`Failed to load item: ${e.message}`)
+    } catch (e) {
+      alert(`Failed to load item: ${getErrorMessage(e)}`)
     }
   }
 
@@ -96,7 +97,7 @@ export default function App() {
         </div>
       )}
 
-      <main className="max-w-5xl mx-auto px-6 py-8">
+      <main className="max-w-5xl mx-auto px-6 py-8"><ErrorBoundary>
         {view.type === 'list' && activeTab === 'dashboard' && (
           <Dashboard onReviewItem={handleDashboardReview} />
         )}
@@ -117,7 +118,7 @@ export default function App() {
         {view.type === 'behavioral-review' && <BehavioralReview item={view.item} onBack={goBack} />}
         {view.type === 'ood-review' && <OODReview item={view.item} onBack={goBack} />}
         {view.type === 'sd-review' && <SystemDesignReview item={view.item} onBack={goBack} />}
-      </main>
+      </ErrorBoundary></main>
     </div>
   )
 }

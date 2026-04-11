@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
-import { api, type BehavioralQuestion, type Review } from '../lib/api'
+import { api, getErrorMessage, type BehavioralQuestion, type Review } from '../lib/api'
+import { sanitizeHtml } from '../lib/ui'
 import { EvaluationResult, ReviewHistory } from './ReviewFeedback'
 
 export default function BehavioralReview({ item, onBack }: { item: BehavioralQuestion; onBack: () => void }) {
@@ -15,7 +16,7 @@ export default function BehavioralReview({ item, onBack }: { item: BehavioralQue
     if (!answer.trim() || submitting) return
     setSubmitting(true)
     try { setResult(await api.submitReview('behavioral', item.id, answer)) }
-    catch (e: any) { alert(e.message) }
+    catch (e) { alert(getErrorMessage(e)) }
     finally { setSubmitting(false) }
   }
 
@@ -32,7 +33,7 @@ export default function BehavioralReview({ item, onBack }: { item: BehavioralQue
       </div>
 
       {/* Show the question prompt */}
-      <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-5 mb-6 problem-content" dangerouslySetInnerHTML={{ __html: item.prompt }} />
+      <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-5 mb-6 problem-content" dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.prompt) }} />
 
       {/* Guidance toggle */}
       {item.guidance && (
@@ -40,7 +41,7 @@ export default function BehavioralReview({ item, onBack }: { item: BehavioralQue
           <button onClick={() => setShowGuidance(!showGuidance)} className="text-sm text-zinc-400 hover:text-zinc-200 mb-4 transition-colors">
             {showGuidance ? 'Hide' : 'Show'} interviewer guidance
           </button>
-          {showGuidance && <div className="problem-content bg-zinc-900/50 border border-zinc-800 rounded-lg p-5 mb-6" dangerouslySetInnerHTML={{ __html: item.guidance }} />}
+          {showGuidance && <div className="problem-content bg-zinc-900/50 border border-zinc-800 rounded-lg p-5 mb-6" dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.guidance) }} />}
         </>
       )}
 

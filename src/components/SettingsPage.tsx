@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { api } from '../lib/api'
+import { api, getErrorMessage } from '../lib/api'
 
 interface ProviderDef {
   id: string
@@ -79,8 +79,8 @@ export default function SettingsPage() {
       setClaudeKey(s.claude_api_key)
       setOpenaiKey(s.openai_api_key)
       setGeminiKey(s.gemini_api_key)
-    } catch (e: any) {
-      setMessage(`Error: ${e.message}`)
+    } catch (e) {
+      setMessage(`Error: ${getErrorMessage(e)}`)
     } finally {
       setSaving(false)
     }

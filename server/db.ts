@@ -95,6 +95,12 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_reviews_item ON reviews(item_type, item_id);
   CREATE INDEX IF NOT EXISTS idx_reviews_reviewed_at ON reviews(reviewed_at);
 
+  -- Slug indexes for search/uniqueness enforcement
+  CREATE INDEX IF NOT EXISTS idx_algorithms_slug ON algorithms(slug);
+  CREATE INDEX IF NOT EXISTS idx_behavioral_slug ON behavioral_questions(slug);
+  CREATE INDEX IF NOT EXISTS idx_ood_slug ON ood_problems(slug);
+  CREATE INDEX IF NOT EXISTS idx_sysdesign_slug ON system_design_problems(slug);
+
   -- ============================================================
   -- Settings (key-value store)
   -- ============================================================

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
-import { api, type OODProblem, type Review } from '../lib/api'
+import { api, getErrorMessage, type OODProblem, type Review } from '../lib/api'
+import { DIFFICULTY_COLORS, sanitizeHtml } from '../lib/ui'
 import { EvaluationResult, ReviewHistory } from './ReviewFeedback'
 
 interface StepDef {
@@ -64,7 +65,7 @@ export default function OODReview({ item, onBack }: { item: OODProblem; onBack: 
 
   useEffect(() => { api.getReviewHistory('ood', item.id).then(setHistory).catch(() => {}) }, [item.id, result])
 
-  const diffColor = item.difficulty === 'Easy' ? 'text-emerald-400' : item.difficulty === 'Medium' ? 'text-amber-400' : 'text-red-400'
+  const diffColor = DIFFICULTY_COLORS[item.difficulty] || 'text-zinc-400'
 
   const updateStep = (key: string, value: string) => {
     setStepAnswers(prev => ({ ...prev, [key]: value }))
@@ -79,7 +80,7 @@ export default function OODReview({ item, onBack }: { item: OODProblem; onBack: 
       .join('\n\n')
     try {
       setResult(await api.submitReview('ood', item.id, summary, stepAnswers))
-    } catch (e: any) { alert(e.message) }
+    } catch (e) { alert(getErrorMessage(e)) }
     finally { setSubmitting(false) }
   }
 
@@ -87,7 +88,7 @@ export default function OODReview({ item, onBack }: { item: OODProblem; onBack: 
     if (!quickAnswer.trim() || submitting) return
     setSubmitting(true)
     try { setResult(await api.submitReview('ood', item.id, quickAnswer)) }
-    catch (e: any) { alert(e.message) }
+    catch (e) { alert(getErrorMessage(e)) }
     finally { setSubmitting(false) }
   }
 
@@ -119,7 +120,7 @@ export default function OODReview({ item, onBack }: { item: OODProblem; onBack: 
 
       {/* Requirements — always visible */}
       <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-5 mb-6 problem-content"
-        dangerouslySetInnerHTML={{ __html: item.requirements }} />
+        dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.requirements) }} />
 
       {/* Mode selection */}
       {mode === 'choose' && (

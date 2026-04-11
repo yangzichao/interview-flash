@@ -1,5 +1,10 @@
 export type ItemType = 'algorithm' | 'behavioral' | 'ood' | 'system_design';
 
+export function getErrorMessage(err: unknown): string {
+  if (err instanceof Error) return err.message;
+  return String(err);
+}
+
 // ============================================================
 // Type-specific data models
 // ============================================================

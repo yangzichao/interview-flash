@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import ReactMarkdown from 'react-markdown'
-import { api, type Algorithm, type Review } from '../lib/api'
+import { api, getErrorMessage, type Algorithm, type Review } from '../lib/api'
+import { DIFFICULTY_COLORS, parseJson, sanitizeHtml } from '../lib/ui'
 import { EvaluationResult, ReviewHistory } from './ReviewFeedback'
 
 const LANGUAGES = [
@@ -29,14 +30,14 @@ export default function AlgoReview({ item, onBack }: { item: Algorithm; onBack: 
     // Save language preference
     api.updateSettings({ preferred_language: language }).catch(() => {})
     try { setResult(await api.submitReview('algorithm', item.id, answer)) }
-    catch (e: any) { alert(e.message) }
+    catch (e) { alert(getErrorMessage(e)) }
     finally { setSubmitting(false) }
   }
 
   const reset = () => { setAnswer(''); setResult(null); setShowDesc(false); setShowSolution(false) }
 
-  const topics: string[] = (() => { try { return JSON.parse(item.topics) } catch { return [] } })()
-  const diffColor = item.difficulty === 'Easy' ? 'text-emerald-400' : item.difficulty === 'Medium' ? 'text-amber-400' : 'text-red-400'
+  const topics = parseJson(item.topics)
+  const diffColor = DIFFICULTY_COLORS[item.difficulty] || 'text-zinc-400'
 
   return (
     <div>
@@ -64,7 +65,7 @@ export default function AlgoReview({ item, onBack }: { item: Algorithm; onBack: 
         )}
       </div>
 
-      {showDesc && <div className="problem-content bg-zinc-900 border border-zinc-800 rounded-lg p-5 mb-4" dangerouslySetInnerHTML={{ __html: item.content }} />}
+      {showDesc && <div className="problem-content bg-zinc-900 border border-zinc-800 rounded-lg p-5 mb-4" dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.content) }} />}
 
       {showSolution && item.solution && (
         <div className="bg-zinc-900 border border-l-2 border-amber-500/30 border-zinc-800 rounded-lg p-5 mb-4">

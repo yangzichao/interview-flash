@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import ReactMarkdown from 'react-markdown'
-import { api, type Review, type ItemType } from '../lib/api'
+import { api, getErrorMessage, type Review, type ItemType } from '../lib/api'
 
 const scoreColors = ['', 'text-red-400', 'text-orange-400', 'text-amber-400', 'text-lime-400', 'text-emerald-400']
 const scoreLabels = ['', 'No recall', 'Weak', 'Partial', 'Strong', 'Perfect']
@@ -111,7 +111,7 @@ function FollowUpSection({ content, itemType, itemId, evaluation }: {
       setFeedback(prev => ({ ...prev, [qIndex]: res.feedback }))
       setAnswer('')
       setActiveQ(null)
-    } catch (e: any) { alert(e.message) }
+    } catch (e) { alert(getErrorMessage(e)) }
     finally { setSubmitting(false) }
   }
 

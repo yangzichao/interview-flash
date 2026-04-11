@@ -1,13 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { api, type BehavioralQuestion } from '../lib/api'
-
-function parseJson(s: string): string[] { try { return JSON.parse(s) } catch { return [] } }
-
-function ScoreBadge({ score }: { score: number | null }) {
-  if (!score) return null
-  const c = ['', 'bg-red-500/20 text-red-400', 'bg-orange-500/20 text-orange-400', 'bg-amber-500/20 text-amber-400', 'bg-lime-500/20 text-lime-400', 'bg-emerald-500/20 text-emerald-400']
-  return <span className={`text-xs px-2 py-0.5 rounded-full ${c[score]}`}>{score}/5</span>
-}
+import { ScoreBadge } from '../lib/ui'
 
 export default function BehavioralList({ onReview }: { onReview: (q: BehavioralQuestion) => void }) {
   const [items, setItems] = useState<BehavioralQuestion[]>([])

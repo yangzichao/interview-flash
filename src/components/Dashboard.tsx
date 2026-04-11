@@ -5,6 +5,7 @@ import {
   RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar,
 } from 'recharts'
 import { api, type OverviewStats, type ScoreHistoryPoint, type TopicStatsResponse, type ActivityPoint, type DueItem } from '../lib/api'
+import { DIFFICULTY_COLORS } from '../lib/ui'
 
 const typeLabels: Record<string, string> = {
   algorithm: 'Algorithm',
@@ -20,11 +21,6 @@ const typeColors: Record<string, string> = {
   system_design: 'text-amber-400',
 }
 
-const diffColors: Record<string, string> = {
-  Easy: 'text-emerald-400',
-  Medium: 'text-amber-400',
-  Hard: 'text-red-400',
-}
 
 interface DashboardProps {
   onReviewItem: (itemType: string, itemId: number) => void
@@ -159,7 +155,7 @@ function DueSection({ items, onReview }: { items: DueItem[]; onReview: (type: st
             </span>
             <span className="text-sm text-zinc-300 truncate flex-1 group-hover:text-zinc-100">{item.title}</span>
             {item.difficulty && (
-              <span className={`text-xs ${diffColors[item.difficulty] || 'text-zinc-500'}`}>{item.difficulty}</span>
+              <span className={`text-xs ${DIFFICULTY_COLORS[item.difficulty] || 'text-zinc-500'}`}>{item.difficulty}</span>
             )}
             {item.last_score && (
               <span className="text-xs text-zinc-600">{item.last_score}/5</span>
