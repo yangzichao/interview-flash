@@ -103,8 +103,33 @@ db.exec(`
     value TEXT NOT NULL
   );
 
+  -- ============================================================
+  -- Spaced Repetition State (SM-2 algorithm)
+  -- ============================================================
+  CREATE TABLE IF NOT EXISTS srs_state (
+    item_type TEXT NOT NULL,
+    item_id INTEGER NOT NULL,
+    ease_factor REAL DEFAULT 2.5,
+    interval INTEGER DEFAULT 0,
+    repetitions INTEGER DEFAULT 0,
+    next_review TEXT DEFAULT (datetime('now')),
+    PRIMARY KEY (item_type, item_id)
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_srs_next_review ON srs_state(next_review);
+
   -- Default provider
   INSERT OR IGNORE INTO settings (key, value) VALUES ('llm_provider', 'claude-cli');
+`);
+
+// Backfill SRS state for any existing reviews that don't have one
+db.exec(`
+  INSERT OR IGNORE INTO srs_state (item_type, item_id, ease_factor, interval, repetitions, next_review)
+  SELECT DISTINCT r.item_type, r.item_id, 2.5, 0, 0, datetime('now')
+  FROM reviews r
+  WHERE NOT EXISTS (
+    SELECT 1 FROM srs_state s WHERE s.item_type = r.item_type AND s.item_id = r.item_id
+  )
 `);
 
 export default db;

@@ -1,6 +1,8 @@
 import { Router } from 'express';
 import db from '../db.js';
 import { evaluateAnswer } from '../services/evaluator.js';
+import { updateSRS } from '../services/srs.js';
+import { runLLM } from '../services/llm.js';
 
 const router = Router();
 
@@ -51,6 +53,9 @@ router.post('/', async (req, res) => {
       VALUES (?, ?, ?, ?, ?, ?)
     `).run(item_type, item_id, user_answer, evaluation, score, step_data ? JSON.stringify(step_data) : null);
 
+    // Update SRS state based on score
+    updateSRS(item_type, item_id, score);
+
     const review = db.prepare('SELECT * FROM reviews WHERE id = ?').get(result.lastInsertRowid);
     res.status(201).json(review);
   } catch (err: any) {
@@ -64,6 +69,48 @@ router.get('/:itemType/:itemId', (req, res) => {
     'SELECT * FROM reviews WHERE item_type = ? AND item_id = ? ORDER BY reviewed_at DESC'
   ).all(req.params.itemType, req.params.itemId);
   res.json(reviews);
+});
+
+// Follow-up question practice
+router.post('/follow-up', async (req, res) => {
+  try {
+    const { item_type, item_id, question, user_answer, context } = req.body;
+    if (!question || !user_answer) {
+      return res.status(400).json({ error: 'question and user_answer are required' });
+    }
+
+    const table = tableMap[item_type];
+    if (!table) return res.status(400).json({ error: `Invalid item_type: ${item_type}` });
+
+    const item = db.prepare(`SELECT * FROM ${table} WHERE id = ?`).get(item_id) as any;
+    const { title } = item ? getItemContent(item_type, item) : { title: 'Unknown' };
+
+    const prompt = `You are an interview prep coach. A student just practiced "${title}" and received feedback. Now they are answering a follow-up question.
+
+## Original Problem: ${title}
+
+## Follow-up Question:
+${question}
+
+## Student's Answer:
+${user_answer}
+
+${context ? `## Context from their original evaluation:\n${context}\n` : ''}
+Provide a brief, helpful evaluation of their follow-up answer:
+
+## Assessment
+<2-3 sentences: did they answer correctly? What did they get right/wrong?>
+
+## Key Point
+<The most important thing they should understand about this follow-up>
+
+Keep it concise — this is a quick follow-up check, not a full evaluation.`;
+
+    const feedback = await runLLM(prompt);
+    res.json({ feedback });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 export default router;

@@ -7,6 +7,7 @@ import oodRouter from './routes/ood.js';
 import systemDesignRouter from './routes/system-design.js';
 import reviewsRouter from './routes/reviews.js';
 import settingsRouter from './routes/settings.js';
+import analyticsRouter from './routes/analytics.js';
 
 const app = express();
 const PORT = 3001;
@@ -20,6 +21,7 @@ app.use('/api/ood', oodRouter);
 app.use('/api/system-design', systemDesignRouter);
 app.use('/api/reviews', reviewsRouter);
 app.use('/api/settings', settingsRouter);
+app.use('/api/analytics', analyticsRouter);
 
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);

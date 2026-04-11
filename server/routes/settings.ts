@@ -14,6 +14,7 @@ router.get('/', (_req, res) => {
     openai_model: getSetting('openai_model') || 'gpt-4o',
     gemini_api_key: getSetting('gemini_api_key') ? '••••••••' : '',
     gemini_model: getSetting('gemini_model') || 'gemini-2.0-flash',
+    preferred_language: getSetting('preferred_language') || 'python',
   });
 });
 
@@ -32,6 +33,7 @@ router.put('/', (req, res) => {
   if (openai_model) setSetting('openai_model', openai_model);
   if (gemini_api_key && gemini_api_key !== '••••••••') setSetting('gemini_api_key', gemini_api_key);
   if (gemini_model) setSetting('gemini_model', gemini_model);
+  if (req.body.preferred_language) setSetting('preferred_language', req.body.preferred_language);
 
   res.json({ ok: true });
 });

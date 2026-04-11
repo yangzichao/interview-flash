@@ -1,4 +1,4 @@
-import { runLLM } from './llm.js';
+import { runLLM, getSetting } from './llm.js';
 
 interface EvaluationResult {
   score: number;
@@ -149,6 +149,7 @@ export async function evaluateAnswer(
   stepData?: Record<string, string>
 ): Promise<EvaluationResult> {
   const systemPrompt = getSystemPrompt(category);
+  const preferredLanguage = getSetting('preferred_language') || 'python';
 
   let studentSection = `## Student's Answer:\n${userAnswer}`;
 
@@ -182,7 +183,11 @@ export async function evaluateAnswer(
     }
   }
 
-  const prompt = `${systemPrompt}
+  const langNote = category === '' || category === 'Arrays & Hashing' || !['Behavioral', 'OOD', 'System Design'].includes(category)
+    ? `\n\nThe student's preferred programming language is **${preferredLanguage}**. When providing code examples or discussing implementation details, use ${preferredLanguage}.`
+    : '';
+
+  const prompt = `${systemPrompt}${langNote}
 
 ## Problem: ${problemTitle}
 

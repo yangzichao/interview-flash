@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import ReactMarkdown from 'react-markdown'
-import type { Review } from '../lib/api'
+import { api, type Review, type ItemType } from '../lib/api'
 
 const scoreColors = ['', 'text-red-400', 'text-orange-400', 'text-amber-400', 'text-lime-400', 'text-emerald-400']
 const scoreLabels = ['', 'No recall', 'Weak', 'Partial', 'Strong', 'Perfect']
@@ -50,7 +50,19 @@ function parseSections(evaluation: string): { title: string; content: string }[]
   return sections
 }
 
-export function SectionCards({ evaluation }: { evaluation: string }) {
+function parseFollowUpQuestions(content: string): string[] {
+  const lines = content.split('\n').filter(l => l.trim())
+  const questions: string[] = []
+  for (const line of lines) {
+    const cleaned = line.replace(/^\d+[\.\)]\s*/, '').replace(/^[-*]\s*/, '').trim()
+    if (cleaned.length > 10) questions.push(cleaned)
+  }
+  return questions
+}
+
+export function SectionCards({ evaluation, itemType, itemId }: {
+  evaluation: string; itemType?: ItemType; itemId?: number
+}) {
   const sections = parseSections(evaluation)
 
   if (sections.length === 0) {
@@ -63,16 +75,97 @@ export function SectionCards({ evaluation }: { evaluation: string }) {
 
   return (
     <div className="space-y-3">
-      {sections.map((s, i) => (
-        <div key={i} className={`bg-zinc-900 border-l-2 ${sectionColors[s.title] || 'border-zinc-700'} border border-zinc-800 rounded-lg p-4`}>
-          <h3 className={`text-sm font-semibold mb-2 ${sectionHeaderColors[s.title] || 'text-zinc-300'}`}>
-            {s.title}
-          </h3>
-          <div className="prose prose-invert prose-sm max-w-none">
-            <ReactMarkdown>{s.content}</ReactMarkdown>
+      {sections.map((s, i) => {
+        if (s.title === 'Follow-up Questions' && itemType && itemId) {
+          return <FollowUpSection key={i} content={s.content} itemType={itemType} itemId={itemId} evaluation={evaluation} />
+        }
+        return (
+          <div key={i} className={`bg-zinc-900 border-l-2 ${sectionColors[s.title] || 'border-zinc-700'} border border-zinc-800 rounded-lg p-4`}>
+            <h3 className={`text-sm font-semibold mb-2 ${sectionHeaderColors[s.title] || 'text-zinc-300'}`}>
+              {s.title}
+            </h3>
+            <div className="prose prose-invert prose-sm max-w-none">
+              <ReactMarkdown>{s.content}</ReactMarkdown>
+            </div>
           </div>
-        </div>
-      ))}
+        )
+      })}
+    </div>
+  )
+}
+
+function FollowUpSection({ content, itemType, itemId, evaluation }: {
+  content: string; itemType: ItemType; itemId: number; evaluation: string
+}) {
+  const questions = parseFollowUpQuestions(content)
+  const [activeQ, setActiveQ] = useState<number | null>(null)
+  const [answer, setAnswer] = useState('')
+  const [feedback, setFeedback] = useState<Record<number, string>>({})
+  const [submitting, setSubmitting] = useState(false)
+
+  const submitFollowUp = async (qIndex: number) => {
+    if (!answer.trim() || submitting) return
+    setSubmitting(true)
+    try {
+      const res = await api.submitFollowUp(itemType, itemId, questions[qIndex], answer, evaluation)
+      setFeedback(prev => ({ ...prev, [qIndex]: res.feedback }))
+      setAnswer('')
+      setActiveQ(null)
+    } catch (e: any) { alert(e.message) }
+    finally { setSubmitting(false) }
+  }
+
+  return (
+    <div className="bg-zinc-900 border-l-2 border-cyan-500/30 border border-zinc-800 rounded-lg p-4">
+      <h3 className="text-sm font-semibold mb-3 text-cyan-400">Follow-up Questions</h3>
+      <div className="space-y-3">
+        {questions.map((q, i) => (
+          <div key={i} className="space-y-2">
+            <button
+              onClick={() => { setActiveQ(activeQ === i ? null : i); setAnswer('') }}
+              className="w-full text-left flex items-start gap-2 group"
+            >
+              <span className="text-cyan-500 text-xs mt-0.5 font-mono">{i + 1}.</span>
+              <span className="text-sm text-zinc-300 group-hover:text-zinc-100 transition-colors">{q}</span>
+            </button>
+
+            {feedback[i] && (
+              <div className="ml-5 bg-zinc-800/50 border border-zinc-700 rounded-lg p-3">
+                <div className="prose prose-invert prose-sm max-w-none">
+                  <ReactMarkdown>{feedback[i]}</ReactMarkdown>
+                </div>
+              </div>
+            )}
+
+            {activeQ === i && !feedback[i] && (
+              <div className="ml-5 space-y-2">
+                <textarea
+                  value={answer}
+                  onChange={e => setAnswer(e.target.value)}
+                  placeholder="Type your answer..."
+                  rows={3}
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm placeholder:text-zinc-600 focus:outline-none focus:border-cyan-500 transition-colors resize-y"
+                />
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => submitFollowUp(i)}
+                    disabled={!answer.trim() || submitting}
+                    className="bg-cyan-600 hover:bg-cyan-500 disabled:opacity-50 px-4 py-1.5 rounded-lg text-xs font-medium transition-colors"
+                  >
+                    {submitting ? 'Checking...' : 'Submit'}
+                  </button>
+                  <button
+                    onClick={() => { setActiveQ(null); setAnswer('') }}
+                    className="text-xs text-zinc-500 hover:text-zinc-300 px-3 py-1.5"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
     </div>
   )
 }
@@ -93,7 +186,7 @@ export function EvaluationResult({ result, onReset, onBack }: { result: Review; 
   return (
     <div className="space-y-4">
       <ScoreBanner score={result.score} />
-      <SectionCards evaluation={result.evaluation} />
+      <SectionCards evaluation={result.evaluation} itemType={result.item_type} itemId={result.item_id} />
       <div className="bg-zinc-900/50 border border-zinc-800 rounded-lg p-4">
         <h4 className="text-xs text-zinc-500 uppercase tracking-wider mb-2">Your Answer</h4>
         <p className="text-sm text-zinc-400 whitespace-pre-wrap">{result.user_answer}</p>

@@ -1,25 +1,39 @@
 import { useState, useEffect } from 'react'
+import ReactMarkdown from 'react-markdown'
 import { api, type Algorithm, type Review } from '../lib/api'
 import { EvaluationResult, ReviewHistory } from './ReviewFeedback'
+
+const LANGUAGES = [
+  'python', 'javascript', 'typescript', 'java', 'c++', 'c', 'go', 'rust', 'swift', 'kotlin', 'c#', 'ruby', 'scala',
+]
 
 export default function AlgoReview({ item, onBack }: { item: Algorithm; onBack: () => void }) {
   const [answer, setAnswer] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [result, setResult] = useState<Review | null>(null)
   const [showDesc, setShowDesc] = useState(false)
+  const [showSolution, setShowSolution] = useState(false)
   const [history, setHistory] = useState<Review[]>([])
+  const [language, setLanguage] = useState('python')
 
   useEffect(() => { api.getReviewHistory('algorithm', item.id).then(setHistory).catch(() => {}) }, [item.id, result])
+  useEffect(() => {
+    api.getSettings().then(s => {
+      if (s.preferred_language) setLanguage(s.preferred_language)
+    }).catch(() => {})
+  }, [])
 
   const submit = async () => {
     if (!answer.trim() || submitting) return
     setSubmitting(true)
+    // Save language preference
+    api.updateSettings({ preferred_language: language }).catch(() => {})
     try { setResult(await api.submitReview('algorithm', item.id, answer)) }
     catch (e: any) { alert(e.message) }
     finally { setSubmitting(false) }
   }
 
-  const reset = () => { setAnswer(''); setResult(null); setShowDesc(false) }
+  const reset = () => { setAnswer(''); setResult(null); setShowDesc(false); setShowSolution(false) }
 
   const topics: string[] = (() => { try { return JSON.parse(item.topics) } catch { return [] } })()
   const diffColor = item.difficulty === 'Easy' ? 'text-emerald-400' : item.difficulty === 'Medium' ? 'text-amber-400' : 'text-red-400'
@@ -39,14 +53,43 @@ export default function AlgoReview({ item, onBack }: { item: Algorithm; onBack: 
         )}
       </div>
 
-      <button onClick={() => setShowDesc(!showDesc)} className="text-sm text-zinc-400 hover:text-zinc-200 mb-4 transition-colors">
-        {showDesc ? 'Hide' : 'Show'} problem description
-      </button>
-      {showDesc && <div className="problem-content bg-zinc-900 border border-zinc-800 rounded-lg p-5 mb-6" dangerouslySetInnerHTML={{ __html: item.content }} />}
+      <div className="flex items-center gap-4 mb-4">
+        <button onClick={() => setShowDesc(!showDesc)} className="text-sm text-zinc-400 hover:text-zinc-200 transition-colors">
+          {showDesc ? 'Hide' : 'Show'} problem description
+        </button>
+        {item.solution && (
+          <button onClick={() => setShowSolution(!showSolution)} className="text-sm text-zinc-400 hover:text-zinc-200 transition-colors">
+            {showSolution ? 'Hide' : 'Show'} reference solution
+          </button>
+        )}
+      </div>
+
+      {showDesc && <div className="problem-content bg-zinc-900 border border-zinc-800 rounded-lg p-5 mb-4" dangerouslySetInnerHTML={{ __html: item.content }} />}
+
+      {showSolution && item.solution && (
+        <div className="bg-zinc-900 border border-l-2 border-amber-500/30 border-zinc-800 rounded-lg p-5 mb-4">
+          <h4 className="text-xs text-amber-400 uppercase tracking-wider mb-2">Reference Solution</h4>
+          <div className="prose prose-invert prose-sm max-w-none">
+            <ReactMarkdown>{item.solution}</ReactMarkdown>
+          </div>
+        </div>
+      )}
 
       {!result ? (
         <div>
-          <label className="block text-sm text-zinc-400 mb-2">Describe your approach (natural language, pseudocode, anything)</label>
+          <div className="flex items-center justify-between mb-2">
+            <label className="block text-sm text-zinc-400">Describe your approach (natural language, pseudocode, anything)</label>
+            <div className="flex items-center gap-2">
+              <label className="text-xs text-zinc-500">Language:</label>
+              <select
+                value={language}
+                onChange={e => setLanguage(e.target.value)}
+                className="bg-zinc-800 border border-zinc-700 rounded px-2 py-1 text-xs text-zinc-300 focus:outline-none focus:border-emerald-500"
+              >
+                {LANGUAGES.map(l => <option key={l} value={l}>{l}</option>)}
+              </select>
+            </div>
+          </div>
           <textarea value={answer} onChange={e => setAnswer(e.target.value)}
             placeholder="e.g. Use a hash map to store complements. For each number, check if target - num exists in the map..."
             rows={8} className="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-4 py-3 text-sm placeholder:text-zinc-600 focus:outline-none focus:border-emerald-500 transition-colors resize-y" />
@@ -59,7 +102,16 @@ export default function AlgoReview({ item, onBack }: { item: Algorithm; onBack: 
           </div>
         </div>
       ) : (
-        <EvaluationResult result={result} onReset={reset} onBack={onBack} />
+        <>
+          <EvaluationResult result={result} onReset={reset} onBack={onBack} />
+          {item.solution && (
+            <div className="mt-4">
+              <button onClick={() => setShowSolution(!showSolution)} className="text-sm text-amber-400 hover:text-amber-300 transition-colors">
+                {showSolution ? 'Hide' : 'Show'} reference solution
+              </button>
+            </div>
+          )}
+        </>
       )}
 
       <ReviewHistory reviews={history} />

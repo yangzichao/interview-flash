@@ -19,6 +19,7 @@ interface SettingsData {
   openai_model: string
   gemini_api_key: string
   gemini_model: string
+  preferred_language: string
 }
 
 const groupColors: Record<string, string> = {
@@ -39,6 +40,7 @@ export default function SettingsPage() {
   const [openaiModel, setOpenaiModel] = useState('')
   const [geminiKey, setGeminiKey] = useState('')
   const [geminiModel, setGeminiModel] = useState('')
+  const [preferredLanguage, setPreferredLanguage] = useState('python')
 
   useEffect(() => {
     fetch('/api/settings').then(r => r.json()).then((s: SettingsData) => {
@@ -50,6 +52,7 @@ export default function SettingsPage() {
       setOpenaiModel(s.openai_model)
       setGeminiKey(s.gemini_api_key)
       setGeminiModel(s.gemini_model)
+      if (s.preferred_language) setPreferredLanguage(s.preferred_language)
     }).catch(() => {})
   }, [])
 
@@ -67,6 +70,7 @@ export default function SettingsPage() {
           openai_model: openaiModel,
           gemini_api_key: geminiKey,
           gemini_model: geminiModel,
+          preferred_language: preferredLanguage,
         }),
       })
       setMessage('Settings saved!')
@@ -179,6 +183,21 @@ export default function SettingsPage() {
           ]} />
         </ConfigSection>
       )}
+
+      {/* Preferred Language */}
+      <div className="mb-8">
+        <h3 className="text-sm font-medium text-zinc-300 mb-3">Preferred Language (Algorithms)</h3>
+        <p className="text-xs text-zinc-500 mb-3">Code examples in evaluations will use this language.</p>
+        <select
+          value={preferredLanguage}
+          onChange={e => setPreferredLanguage(e.target.value)}
+          className="bg-zinc-900 border border-zinc-700 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-emerald-500 transition-colors"
+        >
+          {['python', 'javascript', 'typescript', 'java', 'c++', 'c', 'go', 'rust', 'swift', 'kotlin', 'c#', 'ruby', 'scala'].map(l => (
+            <option key={l} value={l}>{l.charAt(0).toUpperCase() + l.slice(1)}</option>
+          ))}
+        </select>
+      </div>
 
       <div className="flex items-center gap-3">
         <button onClick={save} disabled={saving}

@@ -7,10 +7,11 @@ import AlgoReview from './components/AlgoReview'
 import BehavioralReview from './components/BehavioralReview'
 import OODReview from './components/OODReview'
 import SystemDesignReview from './components/SystemDesignReview'
+import Dashboard from './components/Dashboard'
 import SettingsPage from './components/SettingsPage'
-import type { Algorithm, BehavioralQuestion, OODProblem, SystemDesignProblem } from './lib/api'
+import { api, type Algorithm, type BehavioralQuestion, type OODProblem, type SystemDesignProblem } from './lib/api'
 
-type Tab = 'algorithm' | 'behavioral' | 'ood' | 'system-design' | 'settings'
+type Tab = 'dashboard' | 'algorithm' | 'behavioral' | 'ood' | 'system-design' | 'settings'
 
 type View =
   | { type: 'list' }
@@ -20,6 +21,7 @@ type View =
   | { type: 'sd-review'; item: SystemDesignProblem }
 
 const tabs: { key: Tab; label: string }[] = [
+  { key: 'dashboard', label: 'Dashboard' },
   { key: 'algorithm', label: 'Algorithms' },
   { key: 'behavioral', label: 'Behavioral' },
   { key: 'ood', label: 'OOD' },
@@ -29,9 +31,30 @@ const tabs: { key: Tab; label: string }[] = [
 
 export default function App() {
   const [view, setView] = useState<View>({ type: 'list' })
-  const [activeTab, setActiveTab] = useState<Tab>('algorithm')
+  const [activeTab, setActiveTab] = useState<Tab>('dashboard')
 
   const goBack = () => setView({ type: 'list' })
+
+  // Navigate from dashboard to review a specific item
+  const handleDashboardReview = async (itemType: string, itemId: number) => {
+    try {
+      if (itemType === 'algorithm') {
+        const item = await api.getAlgorithm(itemId)
+        setView({ type: 'algo-review', item })
+      } else if (itemType === 'behavioral') {
+        const item = await api.getBehavioralById(itemId)
+        setView({ type: 'behavioral-review', item })
+      } else if (itemType === 'ood') {
+        const item = await api.getOODById(itemId)
+        setView({ type: 'ood-review', item })
+      } else if (itemType === 'system_design') {
+        const item = await api.getSystemDesignById(itemId)
+        setView({ type: 'sd-review', item })
+      }
+    } catch (e: any) {
+      alert(`Failed to load item: ${e.message}`)
+    }
+  }
 
   return (
     <div className="min-h-screen">
@@ -74,6 +97,9 @@ export default function App() {
       )}
 
       <main className="max-w-5xl mx-auto px-6 py-8">
+        {view.type === 'list' && activeTab === 'dashboard' && (
+          <Dashboard onReviewItem={handleDashboardReview} />
+        )}
         {view.type === 'list' && activeTab === 'algorithm' && (
           <AlgorithmList onReview={(item) => setView({ type: 'algo-review', item })} />
         )}

@@ -143,6 +143,20 @@ export const api = {
   updateSettings: (s: Partial<SettingsUpdate>) => request<{ ok: boolean }>('/api/settings', {
     method: 'PUT', body: JSON.stringify(s),
   }),
+
+  // Analytics
+  getOverview: () => request<OverviewStats>('/api/analytics/overview'),
+  getScoreHistory: (days?: number) => request<ScoreHistoryPoint[]>(`/api/analytics/score-history${days ? `?days=${days}` : ''}`),
+  getTopicStats: () => request<TopicStatsResponse>('/api/analytics/topic-stats'),
+  getActivity: () => request<ActivityPoint[]>('/api/analytics/activity'),
+  getDueItems: () => request<DueItem[]>('/api/analytics/due'),
+  getWeaknessAnalysis: () => request<{ analysis: string }>('/api/analytics/weakness', { method: 'POST' }),
+
+  // Follow-up practice
+  submitFollowUp: (item_type: ItemType, item_id: number, question: string, user_answer: string, context?: string) =>
+    request<{ feedback: string }>('/api/reviews/follow-up', {
+      method: 'POST', body: JSON.stringify({ item_type, item_id, question, user_answer, context }),
+    }),
 };
 
 export interface Settings {
@@ -152,6 +166,7 @@ export interface Settings {
   openai_model: string;
   gemini_api_key: string;
   gemini_model: string;
+  preferred_language: string;
 }
 
 export interface SettingsUpdate {
@@ -160,4 +175,48 @@ export interface SettingsUpdate {
   openai_model: string;
   gemini_api_key: string;
   gemini_model: string;
+  preferred_language: string;
+}
+
+// Analytics types
+export interface OverviewStats {
+  total_problems: number;
+  total_reviews: number;
+  avg_score: number | null;
+  streak: number;
+  by_category: Record<string, { count: number; avg_score: number }>;
+  due_count: number;
+}
+
+export interface ScoreHistoryPoint {
+  day: string;
+  avg_score: number;
+  count: number;
+}
+
+export interface TopicStatsResponse {
+  topic_stats: TopicStat[];
+  category_stats: TopicStat[];
+}
+
+export interface TopicStat {
+  topic: string;
+  avg_score: number;
+  count: number;
+}
+
+export interface ActivityPoint {
+  day: string;
+  count: number;
+}
+
+export interface DueItem {
+  item_type: string;
+  item_id: number;
+  title: string;
+  difficulty?: string;
+  category?: string;
+  last_score: number | null;
+  next_review: string;
+  interval: number;
 }
