@@ -19,10 +19,11 @@ router.get('/:id', (req, res) => {
 router.get('/:id/requirements', (req, res) => {
   const row = db.prepare('SELECT functional_reqs, non_functional_reqs FROM system_design_problems WHERE id = ?').get(req.params.id) as any;
   if (!row) return res.status(404).json({ error: 'Not found' });
-  res.json({
-    functional_reqs: JSON.parse(row.functional_reqs || '[]'),
-    non_functional_reqs: JSON.parse(row.non_functional_reqs || '[]'),
-  });
+  let functional_reqs: string[] = [];
+  let non_functional_reqs: string[] = [];
+  try { functional_reqs = JSON.parse(row.functional_reqs || '[]'); } catch {}
+  try { non_functional_reqs = JSON.parse(row.non_functional_reqs || '[]'); } catch {}
+  res.json({ functional_reqs, non_functional_reqs });
 });
 
 // Per-step feedback: evaluate one step and give coaching
@@ -60,8 +61,8 @@ Keep it concise and encouraging. Format as markdown. Do NOT give them the full a
 
     const feedback = await runLLM(prompt);
     res.json({ feedback });
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
+  } catch (err) {
+    res.status(500).json({ error: err instanceof Error ? err.message : String(err) });
   }
 });
 
@@ -100,8 +101,8 @@ Respond ONLY as the interviewer. One message only.`;
 
     const reply = await runLLM(prompt);
     res.json({ reply });
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
+  } catch (err) {
+    res.status(500).json({ error: err instanceof Error ? err.message : String(err) });
   }
 });
 

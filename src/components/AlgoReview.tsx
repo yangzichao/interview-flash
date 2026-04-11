@@ -27,10 +27,13 @@ export default function AlgoReview({ item, onBack }: { item: Algorithm; onBack: 
   const submit = async () => {
     if (!answer.trim() || submitting) return
     setSubmitting(true)
-    // Save language preference
-    api.updateSettings({ preferred_language: language }).catch(() => {})
-    try { setResult(await api.submitReview('algorithm', item.id, answer)) }
-    catch (e) { alert(getErrorMessage(e)) }
+    try {
+      // Save language preference alongside review submission
+      await Promise.all([
+        api.updateSettings({ preferred_language: language }).catch(() => {}),
+        api.submitReview('algorithm', item.id, answer).then(setResult),
+      ])
+    } catch (e) { alert(getErrorMessage(e)) }
     finally { setSubmitting(false) }
   }
 

@@ -146,7 +146,7 @@ function DueSection({ items, onReview }: { items: DueItem[]; onReview: (type: st
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         {displayed.map((item, i) => (
           <button
-            key={`${item.item_type}-${item.item_id}-${i}`}
+            key={`${item.item_type}-${item.item_id}`}
             onClick={() => onReview(item.item_type, item.item_id)}
             className="flex items-center gap-3 bg-zinc-800/50 hover:bg-zinc-800 border border-zinc-700/50 rounded-lg px-3 py-2.5 text-left transition-colors group"
           >

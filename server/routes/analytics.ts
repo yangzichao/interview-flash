@@ -230,8 +230,8 @@ Keep the response concise and actionable. No fluff.`;
 
     const analysis = await runLLM(prompt);
     res.json({ analysis });
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
+  } catch (err) {
+    res.status(500).json({ error: err instanceof Error ? err.message : String(err) });
   }
 });
 

@@ -161,3 +161,48 @@ Use this before shipping or opening for contribution:
 - [ ] **Error boundary:** App wraps content in `<ErrorBoundary>`?
 - [ ] **Cascade deletes:** Deleting an item also cleans up reviews, SRS state, etc.?
 - [ ] **Type alignment:** API types defined once, imported everywhere?
+
+---
+
+## Addendum: Self-Review Findings (Round 2)
+
+A second review pass after the initial refactoring uncovered additional issues. These are common in "refactoring introduces new bugs" scenarios.
+
+### 9. Race Condition in SQLite Read-Modify-Write
+
+**Problem:** The `updateSRS()` function did: read SRS state -> compute new values -> write back. If two requests arrive simultaneously for the same item, one update is silently lost.
+
+**Fix:** Wrapped the entire operation in `db.transaction()` using better-sqlite3's transaction API. SQLite's `BEGIN EXCLUSIVE` ensures the read-modify-write is atomic.
+
+**Learning:** Any read-modify-write cycle on shared state needs a transaction. Even in SQLite (which serializes writes), the read can see stale data if another write happens between the read and the write. `db.transaction()` in better-sqlite3 handles this idiomatically.
+
+### 10. Defensive JSON.parse
+
+**Problem:** `JSON.parse(row.functional_reqs || '[]')` in the system-design requirements endpoint would crash if the JSON was malformed.
+
+**Fix:** Wrapped in try-catch, fallback to empty array.
+
+**Learning:** Any `JSON.parse` on database content should be wrapped. Database content can be corrupted by interrupted writes, manual edits, or migration bugs. The pattern `try { return JSON.parse(x); } catch { return fallback; }` should be automatic.
+
+### 11. Fire-and-Forget API Calls
+
+**Problem:** `api.updateSettings({ preferred_language: language }).catch(() => {})` was called without `await`, racing against the review submission.
+
+**Fix:** Used `Promise.all()` to run both calls in parallel, ensuring both complete before proceeding.
+
+**Learning:** Fire-and-forget is tempting for "nice to have" side effects, but it creates subtle bugs: the setting might not be saved if the user closes the tab, or the timing might matter for the next request. Either await it or don't call it.
+
+### 12. Dynamic SQL Table Names Need Guards
+
+**Problem:** `queries.ts` used template interpolation for table names (`FROM ${table}`). The table name comes from a whitelist, but if the lookup fails silently, `undefined` gets interpolated.
+
+**Fix:** Added a `resolve()` function that throws explicitly if the type is not in the whitelist.
+
+**Learning:** When you can't use parameterized queries (SQL doesn't allow parameterized table names), add an explicit throw before the interpolation. The pattern is: validate -> throw if invalid -> then interpolate. Never trust that the caller validated.
+
+### Updated Checklist
+
+- [ ] **Transactions:** Any read-modify-write on shared state wrapped in `db.transaction()`?
+- [ ] **JSON.parse safety:** All `JSON.parse` on DB data has try-catch fallback?
+- [ ] **Promise handling:** No fire-and-forget for calls whose success matters?
+- [ ] **Dynamic SQL guards:** All interpolated table names validated with explicit throw?

@@ -29,8 +29,8 @@ router.post('/', async (req, res) => {
     `).run(parseInt(lc.questionId), lc.title, lc.titleSlug, lc.difficulty, lc.content, JSON.stringify(lc.topicTags.map(t => t.name)));
     const row = db.prepare('SELECT * FROM algorithms WHERE id = ?').get(result.lastInsertRowid);
     res.status(201).json(row);
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
+  } catch (err) {
+    res.status(500).json({ error: err instanceof Error ? err.message : String(err) });
   }
 });
 

@@ -22,10 +22,11 @@ interface SRSState {
   next_review: string;
 }
 
-export function updateSRS(itemType: string, itemId: number, score: number): void {
+// Wrapped in a transaction to prevent race conditions on concurrent reviews
+const updateSRSTransaction = db.transaction((itemType: string, itemId: number, score: number) => {
   const quality = SCORE_TO_QUALITY[score] ?? 3;
 
-  let state = db.prepare(
+  const state = db.prepare(
     'SELECT * FROM srs_state WHERE item_type = ? AND item_id = ?'
   ).get(itemType, itemId) as SRSState | undefined;
 
@@ -34,11 +35,9 @@ export function updateSRS(itemType: string, itemId: number, score: number): void
   let reps = state?.repetitions ?? 0;
 
   if (quality < 3) {
-    // Failed — reset repetitions
     reps = 0;
     interval = 0;
   } else {
-    // Successful recall
     if (reps === 0) {
       interval = 1;
     } else if (reps === 1) {
@@ -49,7 +48,6 @@ export function updateSRS(itemType: string, itemId: number, score: number): void
     reps += 1;
   }
 
-  // Update ease factor (min 1.3)
   ef = ef + (0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02));
   if (ef < 1.3) ef = 1.3;
 
@@ -66,6 +64,10 @@ export function updateSRS(itemType: string, itemId: number, score: number): void
       repetitions = excluded.repetitions,
       next_review = excluded.next_review
   `).run(itemType, itemId, ef, interval, reps, nextReviewStr);
+});
+
+export function updateSRS(itemType: string, itemId: number, score: number): void {
+  updateSRSTransaction(itemType, itemId, score);
 }
 
 export interface DueItem {

@@ -58,8 +58,8 @@ router.post('/', async (req, res) => {
 
     const review = db.prepare('SELECT * FROM reviews WHERE id = ?').get(result.lastInsertRowid);
     res.status(201).json(review);
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
+  } catch (err) {
+    res.status(500).json({ error: err instanceof Error ? err.message : String(err) });
   }
 });
 
@@ -75,8 +75,8 @@ router.get('/:itemType/:itemId', (req, res) => {
 router.post('/follow-up', async (req, res) => {
   try {
     const { item_type, item_id, question, user_answer, context } = req.body;
-    if (!question || !user_answer) {
-      return res.status(400).json({ error: 'question and user_answer are required' });
+    if (!item_type || !item_id || !question || !user_answer) {
+      return res.status(400).json({ error: 'item_type, item_id, question, and user_answer are required' });
     }
 
     const table = tableMap[item_type];
@@ -108,8 +108,8 @@ Keep it concise — this is a quick follow-up check, not a full evaluation.`;
 
     const feedback = await runLLM(prompt);
     res.json({ feedback });
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
+  } catch (err) {
+    res.status(500).json({ error: err instanceof Error ? err.message : String(err) });
   }
 });
 
