@@ -183,7 +183,9 @@ export async function evaluateAnswer(
     }
   }
 
-  const langNote = category === '' || category === 'Arrays & Hashing' || !['Behavioral', 'OOD', 'System Design'].includes(category)
+  // Include language preference for algorithm problems (any category not explicitly non-code)
+  const isCodeCategory = !['Behavioral', 'OOD', 'System Design'].includes(category);
+  const langNote = isCodeCategory
     ? `\n\nThe student's preferred programming language is **${preferredLanguage}**. When providing code examples or discussing implementation details, use ${preferredLanguage}.`
     : '';
 

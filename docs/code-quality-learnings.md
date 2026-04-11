@@ -206,3 +206,39 @@ A second review pass after the initial refactoring uncovered additional issues. 
 - [ ] **JSON.parse safety:** All `JSON.parse` on DB data has try-catch fallback?
 - [ ] **Promise handling:** No fire-and-forget for calls whose success matters?
 - [ ] **Dynamic SQL guards:** All interpolated table names validated with explicit throw?
+
+---
+
+## Addendum: Self-Review Findings (Round 3)
+
+### 13. Missing Tailwind Plugin
+
+**Problem:** The codebase uses `prose prose-invert prose-sm` classes extensively for rendering markdown content. The `@tailwindcss/typography` plugin — which provides these classes — was never installed.
+
+**Impact:** All markdown rendered via `react-markdown` (evaluation feedback, weakness analysis, coaching responses) had no typography styling. Headings, lists, code blocks, and paragraphs all rendered as unstyled text.
+
+**Fix:** `npm install -D @tailwindcss/typography` and added to `tailwind.config.js` plugins.
+
+**Learning:** When using Tailwind utility classes that come from plugins (`prose`, `aspect-*`, `forms`), verify the plugin is actually installed. The classes silently do nothing if the plugin is missing — no build error, no runtime error, just broken visuals that are easy to miss if you're not comparing against a design spec.
+
+### 14. Type Drift Between Server and Client
+
+**Problem:** The server's `/api/settings` returns `claude_api_key` and `claude_model` fields, but the client's `Settings` interface didn't include them. `SettingsPage.tsx` worked around this with its own duplicate `SettingsData` interface.
+
+**Fix:** Added the missing fields to the shared `Settings` and `SettingsUpdate` types. Rewrote `SettingsPage` to use the shared type (with `Omit` to extend the provider type with richer server data).
+
+**Learning:** When the server returns more fields than the client type declares, TypeScript won't complain (extra fields are silently ignored). This makes it easy for types to drift apart. Solution: the server's response type should be the source of truth. If you can't share types at build time, at least make sure the client type is a superset of what it actually uses.
+
+### 15. Raw `fetch()` vs API Helper Inconsistency
+
+**Problem:** `SettingsPage` used raw `fetch('/api/settings')` while every other component used the `api.getSettings()` helper.
+
+**Fix:** Replaced with `api.getSettings()` and `api.updateSettings()`.
+
+**Learning:** Once you create an API abstraction layer, use it everywhere. Raw `fetch()` bypasses error handling, type checking, and any future middleware (auth headers, retry logic) that the abstraction provides.
+
+### Updated Checklist
+
+- [ ] **CSS plugins:** All Tailwind plugin classes (`prose`, `aspect-*`) have the plugin installed?
+- [ ] **Type coverage:** Client types include all fields the server returns?
+- [ ] **API consistency:** All components use the API helper, not raw `fetch()`?

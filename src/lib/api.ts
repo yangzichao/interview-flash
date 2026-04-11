@@ -167,6 +167,8 @@ export const api = {
 export interface Settings {
   providers: { id: string; name: string; needsApiKey: boolean }[];
   active_provider: string;
+  claude_api_key: string;
+  claude_model: string;
   openai_api_key: string;
   openai_model: string;
   gemini_api_key: string;
@@ -176,6 +178,8 @@ export interface Settings {
 
 export interface SettingsUpdate {
   active_provider: string;
+  claude_api_key: string;
+  claude_model: string;
   openai_api_key: string;
   openai_model: string;
   gemini_api_key: string;

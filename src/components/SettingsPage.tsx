@@ -1,6 +1,13 @@
 import { useState, useEffect } from 'react'
-import { api, getErrorMessage } from '../lib/api'
+import { api, getErrorMessage, type Settings } from '../lib/api'
 
+const groupColors: Record<string, string> = {
+  Anthropic: 'border-orange-500/30',
+  OpenAI: 'border-green-500/30',
+  Google: 'border-blue-500/30',
+}
+
+// The server returns richer provider info than the shared Settings type exposes
 interface ProviderDef {
   id: string
   group: string
@@ -10,26 +17,10 @@ interface ProviderDef {
   keyPlaceholder?: string
 }
 
-interface SettingsData {
-  providers: ProviderDef[]
-  active_provider: string
-  claude_api_key: string
-  claude_model: string
-  openai_api_key: string
-  openai_model: string
-  gemini_api_key: string
-  gemini_model: string
-  preferred_language: string
-}
-
-const groupColors: Record<string, string> = {
-  Anthropic: 'border-orange-500/30',
-  OpenAI: 'border-green-500/30',
-  Google: 'border-blue-500/30',
-}
+type SettingsWithProviders = Omit<Settings, 'providers'> & { providers: ProviderDef[] }
 
 export default function SettingsPage() {
-  const [data, setData] = useState<SettingsData | null>(null)
+  const [data, setData] = useState<SettingsWithProviders | null>(null)
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState('')
 
@@ -43,39 +34,36 @@ export default function SettingsPage() {
   const [preferredLanguage, setPreferredLanguage] = useState('python')
 
   useEffect(() => {
-    fetch('/api/settings').then(r => r.json()).then((s: SettingsData) => {
-      setData(s)
-      setProvider(s.active_provider)
-      setClaudeKey(s.claude_api_key)
-      setClaudeModel(s.claude_model)
-      setOpenaiKey(s.openai_api_key)
-      setOpenaiModel(s.openai_model)
-      setGeminiKey(s.gemini_api_key)
-      setGeminiModel(s.gemini_model)
-      if (s.preferred_language) setPreferredLanguage(s.preferred_language)
+    api.getSettings().then((s) => {
+      const sw = s as SettingsWithProviders
+      setData(sw)
+      setProvider(sw.active_provider)
+      setClaudeKey(sw.claude_api_key)
+      setClaudeModel(sw.claude_model)
+      setOpenaiKey(sw.openai_api_key)
+      setOpenaiModel(sw.openai_model)
+      setGeminiKey(sw.gemini_api_key)
+      setGeminiModel(sw.gemini_model)
+      if (sw.preferred_language) setPreferredLanguage(sw.preferred_language)
     }).catch(() => {})
   }, [])
 
   const save = async () => {
     setSaving(true); setMessage('')
     try {
-      await fetch('/api/settings', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          active_provider: provider,
-          claude_api_key: claudeKey,
-          claude_model: claudeModel,
-          openai_api_key: openaiKey,
-          openai_model: openaiModel,
-          gemini_api_key: geminiKey,
-          gemini_model: geminiModel,
-          preferred_language: preferredLanguage,
-        }),
+      await api.updateSettings({
+        active_provider: provider,
+        claude_api_key: claudeKey,
+        claude_model: claudeModel,
+        openai_api_key: openaiKey,
+        openai_model: openaiModel,
+        gemini_api_key: geminiKey,
+        gemini_model: geminiModel,
+        preferred_language: preferredLanguage,
       })
       setMessage('Settings saved!')
       // Reload masked keys
-      const s: SettingsData = await fetch('/api/settings').then(r => r.json())
+      const s = await api.getSettings() as SettingsWithProviders
       setClaudeKey(s.claude_api_key)
       setOpenaiKey(s.openai_api_key)
       setGeminiKey(s.gemini_api_key)
@@ -95,7 +83,6 @@ export default function SettingsPage() {
     return acc
   }, {} as Record<string, ProviderDef[]>)
 
-  // Which API config to show
   const showClaudeConfig = provider === 'claude-api'
   const showOpenaiConfig = provider === 'openai-api'
   const showGeminiConfig = provider === 'gemini-api'
@@ -146,7 +133,6 @@ export default function SettingsPage() {
         ))}
       </div>
 
-      {/* Claude API config */}
       {showClaudeConfig && (
         <ConfigSection title="Claude API Configuration">
           <KeyInput value={claudeKey} onChange={setClaudeKey} placeholder="sk-ant-..." />
@@ -158,7 +144,6 @@ export default function SettingsPage() {
         </ConfigSection>
       )}
 
-      {/* OpenAI API config */}
       {showOpenaiConfig && (
         <ConfigSection title="OpenAI API Configuration">
           <KeyInput value={openaiKey} onChange={setOpenaiKey} placeholder="sk-..." />
@@ -172,7 +157,6 @@ export default function SettingsPage() {
         </ConfigSection>
       )}
 
-      {/* Gemini API config */}
       {showGeminiConfig && (
         <ConfigSection title="Gemini API Configuration">
           <KeyInput value={geminiKey} onChange={setGeminiKey} placeholder="AI..." />
@@ -184,7 +168,6 @@ export default function SettingsPage() {
         </ConfigSection>
       )}
 
-      {/* Preferred Language */}
       <div className="mb-8">
         <h3 className="text-sm font-medium text-zinc-300 mb-3">Preferred Language (Algorithms)</h3>
         <p className="text-xs text-zinc-500 mb-3">Code examples in evaluations will use this language.</p>
