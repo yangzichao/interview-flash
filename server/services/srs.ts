@@ -94,20 +94,32 @@ export function getDueItems(): DueItem[] {
     LIMIT 50
   `).all(now) as any[];
 
-  // Items never reviewed (no SRS state)
+  // Items never reviewed (no SRS state) — cap each type separately so one
+  // large bucket doesn't crowd out the others
   const neverReviewed = db.prepare(`
-    SELECT 'algorithm' as item_type, id as item_id, title, difficulty, category FROM algorithms
-    WHERE id NOT IN (SELECT item_id FROM srs_state WHERE item_type = 'algorithm')
+    SELECT * FROM (
+      SELECT 'algorithm' as item_type, id as item_id, title, difficulty, category FROM algorithms
+      WHERE id NOT IN (SELECT item_id FROM srs_state WHERE item_type = 'algorithm')
+      LIMIT 5
+    )
     UNION ALL
-    SELECT 'behavioral', id, title, NULL, category FROM behavioral_questions
-    WHERE id NOT IN (SELECT item_id FROM srs_state WHERE item_type = 'behavioral')
+    SELECT * FROM (
+      SELECT 'behavioral', id, title, NULL, category FROM behavioral_questions
+      WHERE id NOT IN (SELECT item_id FROM srs_state WHERE item_type = 'behavioral')
+      LIMIT 5
+    )
     UNION ALL
-    SELECT 'ood', id, title, difficulty, category FROM ood_problems
-    WHERE id NOT IN (SELECT item_id FROM srs_state WHERE item_type = 'ood')
+    SELECT * FROM (
+      SELECT 'ood', id, title, difficulty, category FROM ood_problems
+      WHERE id NOT IN (SELECT item_id FROM srs_state WHERE item_type = 'ood')
+      LIMIT 5
+    )
     UNION ALL
-    SELECT 'system_design', id, title, difficulty, category FROM system_design_problems
-    WHERE id NOT IN (SELECT item_id FROM srs_state WHERE item_type = 'system_design')
-    LIMIT 20
+    SELECT * FROM (
+      SELECT 'system_design', id, title, difficulty, category FROM system_design_problems
+      WHERE id NOT IN (SELECT item_id FROM srs_state WHERE item_type = 'system_design')
+      LIMIT 5
+    )
   `).all() as any[];
 
   // Enrich due items with titles

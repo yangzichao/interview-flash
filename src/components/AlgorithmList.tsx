@@ -95,7 +95,7 @@ export default function AlgorithmList({ onReview }: { onReview: (a: Algorithm) =
             <div className="flex items-center gap-3 min-w-0">
               <span className="text-zinc-500 text-sm w-8 text-right shrink-0">{p.leetcode_id}</span>
               <span className="font-medium truncate">{p.title}</span>
-              <span className={`text-xs shrink-0 ${DIFFICULTY_COLORS[p.difficulty]}`}>{p.difficulty}</span>
+              <span className={`text-xs shrink-0 ${DIFFICULTY_COLORS[p.difficulty] || 'text-zinc-400'}`}>{p.difficulty}</span>
               {p.category && <span className="text-xs text-zinc-600 shrink-0 hidden sm:inline">{p.category}</span>}
               <ScoreBadge score={p.last_score} />
               {parseJson(p.lists).map(l => (
@@ -104,7 +104,7 @@ export default function AlgorithmList({ onReview }: { onReview: (a: Algorithm) =
             </div>
             <div className="flex items-center gap-2 shrink-0">
               <button onClick={() => onReview(p)} className="text-sm text-emerald-400 hover:text-emerald-300 px-3 py-1 rounded transition-colors">Review</button>
-              <button onClick={() => { api.deleteAlgorithm(p.id).then(load) }} className="text-sm text-zinc-600 hover:text-red-400 opacity-0 group-hover:opacity-100 px-2 py-1 rounded transition-all">✕</button>
+              <button onClick={() => { api.deleteAlgorithm(p.id).then(load).catch(e => alert(getErrorMessage(e))) }} className="text-sm text-zinc-600 hover:text-red-400 opacity-0 group-hover:opacity-100 px-2 py-1 rounded transition-all">✕</button>
             </div>
           </div>
         ))}

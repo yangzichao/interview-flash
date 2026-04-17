@@ -206,9 +206,9 @@ ${studentSection}`;
 
   const text = await runLLM(prompt);
 
-  const scoreMatch = text.match(/SCORE:\s*(\d)/);
+  const scoreMatch = text.match(/SCORE:[\s*_`]*([1-5])/i);
   const score = scoreMatch ? parseInt(scoreMatch[1], 10) : 3;
-  const evaluation = text.replace(/SCORE:\s*\d\s*/, '').trim();
+  const evaluation = text.replace(/^[\s*_`#>-]*SCORE:[\s*_`]*[1-5][\s*_`]*\n?/im, '').trim();
 
   return { score: Math.min(5, Math.max(1, score)), evaluation };
 }

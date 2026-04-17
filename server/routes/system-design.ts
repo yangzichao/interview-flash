@@ -5,6 +5,15 @@ import { getItemsWithReviewData, getItemById, deleteItem } from '../services/que
 
 const router = Router();
 
+const STEP_LABELS: Record<string, string> = {
+  requirements: 'Requirements Clarification',
+  capacity: 'Capacity Estimation',
+  api: 'API Design',
+  data_model: 'Data Model',
+  architecture: 'High-Level Architecture',
+  deep_dives: 'Deep Dives',
+};
+
 router.get('/', (_req, res) => {
   res.json(getItemsWithReviewData('system_design'));
 });
@@ -36,7 +45,7 @@ router.post('/:id/step-feedback', async (req, res) => {
     const prevContext = previous_steps
       ? Object.entries(previous_steps as Record<string, string>)
           .filter(([_, v]) => v?.trim())
-          .map(([k, v]) => `[${k}]: ${v}`)
+          .map(([k, v]) => `[${STEP_LABELS[k] || k}]: ${v}`)
           .join('\n\n')
       : '';
 

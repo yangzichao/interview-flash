@@ -259,7 +259,9 @@ function ActivityCalendar({ data }: { data: ActivityPoint[] }) {
     return map
   }, [data])
 
-  // Generate last 20 weeks of dates
+  // Generate last 20 weeks of dates. Recomputed when `data` refreshes so the
+  // calendar follows the latest activity date (avoids stale "today" on long
+  // sessions).
   const weeks = useMemo(() => {
     const result: string[][] = []
     const today = new Date()
@@ -279,7 +281,7 @@ function ActivityCalendar({ data }: { data: ActivityPoint[] }) {
       result.push(week)
     }
     return result
-  }, [])
+  }, [data])
 
   const getColor = (count: number) => {
     if (!count) return 'bg-zinc-800'
