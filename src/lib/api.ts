@@ -167,6 +167,14 @@ export const api = {
     request<{ feedback: string }>('/api/reviews/follow-up', {
       method: 'POST', body: JSON.stringify({ item_type, item_id, question, user_answer, context }),
     }),
+
+  // Personal notes per problem
+  getNotes: (item_type: ItemType, item_id: number) =>
+    request<{ notes: string; updated_at: string | null }>(`/api/notes/${item_type}/${item_id}`),
+  saveNotes: (item_type: ItemType, item_id: number, notes: string) =>
+    request<{ ok: boolean; updated_at: string }>(`/api/notes/${item_type}/${item_id}`, {
+      method: 'PUT', body: JSON.stringify({ notes }),
+    }),
 };
 
 export interface Settings {

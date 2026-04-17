@@ -37,5 +37,6 @@ export const deleteItem = db.transaction((type: string, id: string | number) => 
   const { table, itemType } = resolve(type);
   db.prepare('DELETE FROM srs_state WHERE item_type = ? AND item_id = ?').run(itemType, id);
   db.prepare('DELETE FROM reviews WHERE item_type = ? AND item_id = ?').run(itemType, id);
+  db.prepare('DELETE FROM problem_notes WHERE item_type = ? AND item_id = ?').run(itemType, id);
   db.prepare(`DELETE FROM ${table} WHERE id = ?`).run(id);
 });

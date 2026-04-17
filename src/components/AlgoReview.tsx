@@ -3,6 +3,7 @@ import ReactMarkdown from 'react-markdown'
 import { api, getErrorMessage, type Algorithm, type Review } from '../lib/api'
 import { DIFFICULTY_COLORS, parseJson, sanitizeHtml } from '../lib/ui'
 import { EvaluationResult, ReviewHistory } from './ReviewFeedback'
+import ProblemNotes from './ProblemNotes'
 
 const LANGUAGES = [
   'python', 'javascript', 'typescript', 'java', 'c++', 'c', 'go', 'rust', 'swift', 'kotlin', 'c#', 'ruby', 'scala',
@@ -78,6 +79,8 @@ export default function AlgoReview({ item, onBack }: { item: Algorithm; onBack: 
           </div>
         </div>
       )}
+
+      <ProblemNotes itemType="algorithm" itemId={item.id} />
 
       {!result ? (
         <div>

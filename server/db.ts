@@ -124,6 +124,17 @@ db.exec(`
 
   CREATE INDEX IF NOT EXISTS idx_srs_next_review ON srs_state(next_review);
 
+  -- ============================================================
+  -- Personal notes per problem (free-form study journal)
+  -- ============================================================
+  CREATE TABLE IF NOT EXISTS problem_notes (
+    item_type TEXT NOT NULL,
+    item_id INTEGER NOT NULL,
+    notes TEXT NOT NULL DEFAULT '',
+    updated_at TEXT DEFAULT (datetime('now')),
+    PRIMARY KEY (item_type, item_id)
+  );
+
   -- Default provider
   INSERT OR IGNORE INTO settings (key, value) VALUES ('llm_provider', 'claude-cli');
 `);

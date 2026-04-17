@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { api, getErrorMessage, type OODProblem, type Review } from '../lib/api'
 import { DIFFICULTY_COLORS, sanitizeHtml } from '../lib/ui'
 import { EvaluationResult, ReviewHistory } from './ReviewFeedback'
+import ProblemNotes from './ProblemNotes'
 
 interface StepDef {
   key: string
@@ -102,6 +103,9 @@ export default function OODReview({ item, onBack }: { item: OODProblem; onBack: 
       <div>
         <h2 className="text-xl font-bold mb-6">{item.title}</h2>
         <EvaluationResult result={result} onReset={reset} onBack={onBack} />
+        <div className="mt-6">
+          <ProblemNotes itemType="ood" itemId={item.id} />
+        </div>
         <ReviewHistory reviews={history} />
       </div>
     )
@@ -121,6 +125,8 @@ export default function OODReview({ item, onBack }: { item: OODProblem; onBack: 
       {/* Requirements — always visible */}
       <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-5 mb-6 problem-content"
         dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.requirements) }} />
+
+      <ProblemNotes itemType="ood" itemId={item.id} />
 
       {/* Mode selection */}
       {mode === 'choose' && (

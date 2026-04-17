@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { api, getErrorMessage, type BehavioralQuestion, type Review } from '../lib/api'
 import { sanitizeHtml } from '../lib/ui'
 import { EvaluationResult, ReviewHistory } from './ReviewFeedback'
+import ProblemNotes from './ProblemNotes'
 
 export default function BehavioralReview({ item, onBack }: { item: BehavioralQuestion; onBack: () => void }) {
   const [answer, setAnswer] = useState('')
@@ -44,6 +45,8 @@ export default function BehavioralReview({ item, onBack }: { item: BehavioralQue
           {showGuidance && <div className="problem-content bg-zinc-900/50 border border-zinc-800 rounded-lg p-5 mb-6" dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.guidance) }} />}
         </>
       )}
+
+      <ProblemNotes itemType="behavioral" itemId={item.id} />
 
       {!result ? (
         <div>

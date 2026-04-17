@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { api, type SystemDesignProblem, type Review } from '../lib/api'
 import { DIFFICULTY_COLORS, sanitizeHtml } from '../lib/ui'
 import { EvaluationResult, ReviewHistory } from './ReviewFeedback'
+import ProblemNotes from './ProblemNotes'
 import QuickMode from './system-design/QuickMode'
 import GuidedMode from './system-design/GuidedMode'
 import MockInterviewMode from './system-design/MockInterviewMode'
@@ -23,6 +24,9 @@ export default function SystemDesignReview({ item, onBack }: { item: SystemDesig
       <div>
         <h2 className="text-xl font-bold mb-6">{item.title}</h2>
         <EvaluationResult result={result} onReset={reset} onBack={onBack} />
+        <div className="mt-6">
+          <ProblemNotes itemType="system_design" itemId={item.id} />
+        </div>
         <ReviewHistory reviews={history} />
       </div>
     )
@@ -39,6 +43,8 @@ export default function SystemDesignReview({ item, onBack }: { item: SystemDesig
 
       <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-5 mb-6 problem-content"
         dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.problem_statement) }} />
+
+      <ProblemNotes itemType="system_design" itemId={item.id} />
 
       {mode === 'choose' && (
         <div className="grid grid-cols-3 gap-4 mb-6">
