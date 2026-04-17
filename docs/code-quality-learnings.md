@@ -242,3 +242,52 @@ A second review pass after the initial refactoring uncovered additional issues. 
 - [ ] **CSS plugins:** All Tailwind plugin classes (`prose`, `aspect-*`) have the plugin installed?
 - [ ] **Type coverage:** Client types include all fields the server returns?
 - [ ] **API consistency:** All components use the API helper, not raw `fetch()`?
+
+---
+
+## Addendum: Self-Review Findings (Round 4)
+
+### 16. LLM API Response Null Safety
+
+**Problem:** Both the Claude API and Gemini API response handlers assumed non-empty responses:
+```typescript
+// Claude — crashes if content array is empty
+response.content[0].type === 'text' ? response.content[0].text.trim() : ''
+// Gemini — crashes if response is null
+result.response.text().trim()
+```
+
+**Fix:** Added optional chaining: `response.content?.[0]` and `result.response?.text()?.trim() || ''`.
+
+**Learning:** LLM API responses can be empty or null in edge cases: rate limiting, content filtering, network timeouts. Always use optional chaining on API response bodies, even when the docs say the field "is always present". External APIs are the #1 source of null reference errors in production.
+
+### 17. Cascade Delete Without Transaction
+
+**Problem:** `deleteItem()` ran 3 separate DELETE statements (srs_state, reviews, item) without a transaction. A crash between any two leaves orphaned records.
+
+**Fix:** Wrapped in `db.transaction()`.
+
+**Learning:** Any operation that touches multiple tables should be wrapped in a transaction. This isn't just about race conditions — it's about crash safety. SQLite's WAL mode doesn't help if your process dies mid-sequence.
+
+### 18. Deleted Item Ghosts in Analytics
+
+**Problem:** When an item is deleted but its reviews remain (possible before the transaction fix), the weakness analysis query returns null titles. These got interpolated as the string "null" in the LLM prompt.
+
+**Fix:** Added `.filter(r => r.title != null)` before building the prompt.
+
+**Learning:** Any query that JOINs across tables with potential orphaned rows should handle NULL results. When building LLM prompts from database data, always validate the data before interpolation — LLMs interpret "null" literally.
+
+### 19. Hardcoded CLI Paths
+
+**Problem:** `runClaudeCLI` and `runCodexCLI` used `/opt/homebrew/bin/claude` — Mac Homebrew-specific. Linux users, or anyone with a different install path, would get "No such file or directory".
+
+**Fix:** Changed to bare command names (`claude`, `codex`) so the shell's PATH resolution handles it.
+
+**Learning:** Never hardcode absolute paths to executables. Use bare command names and let PATH do its job. If you need to verify a tool exists, use `which` or `command -v` at startup, not hardcoded paths at call time.
+
+### Final Checklist Addition
+
+- [ ] **API response safety:** All external API responses use optional chaining before property access?
+- [ ] **Multi-table operations:** All operations touching 2+ tables wrapped in a transaction?
+- [ ] **LLM prompt data:** All data interpolated into prompts validated for null/undefined?
+- [ ] **No hardcoded paths:** All executable references use bare command names (PATH lookup)?

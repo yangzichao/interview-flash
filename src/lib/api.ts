@@ -96,7 +96,12 @@ async function request<T>(url: string, opts?: RequestInit): Promise<T> {
     headers: { 'Content-Type': 'application/json' },
     ...opts,
   });
-  const data = await res.json();
+  let data;
+  try {
+    data = await res.json();
+  } catch {
+    throw new Error(res.ok ? 'Invalid JSON response' : `HTTP ${res.status}: ${res.statusText}`);
+  }
   if (!res.ok) throw new Error(data.error || 'Request failed');
   return data;
 }

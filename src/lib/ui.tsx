@@ -32,7 +32,7 @@ export function sanitizeHtml(html: string): string {
 }
 
 export function ScoreBadge({ score }: { score: number | null }) {
-  if (!score) return null
+  if (score == null) return null
   return (
     <span className={`text-xs px-2 py-0.5 rounded-full ${SCORE_BADGE_COLORS[score]}`}>
       {score}/5

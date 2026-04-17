@@ -99,6 +99,8 @@ function getApiKey(settingsKey: string, envVar: string): string {
 // CLI runner (shared by claude, codex, gemini)
 // ============================================================
 
+const CLI_TIMEOUT_MS = 120_000; // 2 minutes
+
 function runCLI(command: string, args: string[], prompt: string): Promise<string> {
   return new Promise((resolve, reject) => {
     const proc = spawn(command, args, {
@@ -106,16 +108,29 @@ function runCLI(command: string, args: string[], prompt: string): Promise<string
       env: { ...process.env, PATH: process.env.PATH },
     });
 
+    const timer = setTimeout(() => {
+      proc.kill();
+      reject(new Error(`${command} timed out after ${CLI_TIMEOUT_MS / 1000}s`));
+    }, CLI_TIMEOUT_MS);
+
     let stdout = '';
     let stderr = '';
     proc.stdout.on('data', (d: Buffer) => { stdout += d.toString(); });
     proc.stderr.on('data', (d: Buffer) => { stderr += d.toString(); });
     proc.on('close', (code) => {
+      clearTimeout(timer);
       if (code !== 0) reject(new Error(stderr || stdout || `${command} exited with code ${code}`));
       else resolve(stdout.trim());
     });
-    proc.on('error', (err) => reject(new Error(`Failed to spawn ${command}: ${err.message}`)));
+    proc.on('error', (err) => {
+      clearTimeout(timer);
+      reject(new Error(`Failed to spawn ${command}: ${err.message}`));
+    });
 
+    proc.stdin.on('error', (err) => {
+      clearTimeout(timer);
+      reject(new Error(`Failed to write to ${command}: ${err.message}`));
+    });
     proc.stdin.write(prompt);
     proc.stdin.end();
   });
@@ -126,11 +141,11 @@ function runCLI(command: string, args: string[], prompt: string): Promise<string
 // ============================================================
 
 function runClaudeCLI(prompt: string): Promise<string> {
-  return runCLI('/opt/homebrew/bin/claude', ['-p', '--output-format', 'text'], prompt);
+  return runCLI('claude', ['-p', '--output-format', 'text'], prompt);
 }
 
 function runCodexCLI(prompt: string): Promise<string> {
-  return runCLI('/opt/homebrew/bin/codex', ['-q', '--full-auto'], prompt);
+  return runCLI('codex', ['-q', '--full-auto'], prompt);
 }
 
 function runGeminiCLI(prompt: string): Promise<string> {
@@ -149,7 +164,8 @@ async function runClaudeAPI(prompt: string): Promise<string> {
     max_tokens: 2000,
     messages: [{ role: 'user', content: prompt }],
   });
-  return response.content[0].type === 'text' ? response.content[0].text.trim() : '';
+  const block = response.content?.[0];
+  return block?.type === 'text' ? block.text.trim() : '';
 }
 
 async function runOpenAI(prompt: string): Promise<string> {
@@ -173,7 +189,7 @@ async function runGemini(prompt: string): Promise<string> {
   const genAI = new GoogleGenerativeAI(apiKey);
   const model = genAI.getGenerativeModel({ model: getSetting('gemini_model') || 'gemini-2.0-flash' });
   const result = await model.generateContent(prompt);
-  return result.response.text().trim();
+  return result.response?.text()?.trim() || '';
 }
 
 // ============================================================

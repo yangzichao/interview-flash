@@ -83,7 +83,8 @@ router.post('/follow-up', async (req, res) => {
     if (!table) return res.status(400).json({ error: `Invalid item_type: ${item_type}` });
 
     const item = db.prepare(`SELECT * FROM ${table} WHERE id = ?`).get(item_id) as any;
-    const { title } = item ? getItemContent(item_type, item) : { title: 'Unknown' };
+    if (!item) return res.status(404).json({ error: 'Item not found' });
+    const { title } = getItemContent(item_type, item);
 
     const prompt = `You are an interview prep coach. A student just practiced "${title}" and received feedback. Now they are answering a follow-up question.
 

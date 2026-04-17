@@ -33,9 +33,9 @@ export function getItemById(type: keyof typeof TABLE_MAP, id: string | number) {
   return db.prepare(`SELECT * FROM ${table} WHERE id = ?`).get(id);
 }
 
-export function deleteItem(type: keyof typeof TABLE_MAP, id: string | number) {
+export const deleteItem = db.transaction((type: string, id: string | number) => {
   const { table, itemType } = resolve(type);
   db.prepare('DELETE FROM srs_state WHERE item_type = ? AND item_id = ?').run(itemType, id);
   db.prepare('DELETE FROM reviews WHERE item_type = ? AND item_id = ?').run(itemType, id);
   db.prepare(`DELETE FROM ${table} WHERE id = ?`).run(id);
-}
+});

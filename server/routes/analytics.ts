@@ -9,6 +9,7 @@ const router = Router();
 // Overview stats
 // ============================================================
 router.get('/overview', (_req, res) => {
+  try {
   const totalProblems = db.prepare(`
     SELECT
       (SELECT COUNT(*) FROM algorithms) +
@@ -74,6 +75,9 @@ router.get('/overview', (_req, res) => {
     by_category: byCategory,
     due_count: dueCount.count + neverReviewed.count,
   });
+  } catch (err) {
+    res.status(500).json({ error: err instanceof Error ? err.message : String(err) });
+  }
 });
 
 // ============================================================
@@ -169,7 +173,11 @@ router.get('/activity', (_req, res) => {
 // Due items (SRS)
 // ============================================================
 router.get('/due', (_req, res) => {
-  res.json(getDueItems());
+  try {
+    res.json(getDueItems());
+  } catch (err) {
+    res.status(500).json({ error: err instanceof Error ? err.message : String(err) });
+  }
 });
 
 // ============================================================
@@ -205,9 +213,11 @@ router.post('/weakness', async (_req, res) => {
       return res.json({ analysis: 'Not enough review data yet. Complete at least 3 reviews to get weakness analysis.' });
     }
 
-    const summaryLines = recentReviews.map(r =>
-      `- [${r.item_type}] "${r.title}" — score ${r.score}/5${r.topics ? ` (topics: ${r.topics})` : ''}${r.category ? ` [${r.category}]` : ''}`
-    ).join('\n');
+    const summaryLines = recentReviews
+      .filter(r => r.title != null)
+      .map(r =>
+        `- [${r.item_type}] "${r.title}" — score ${r.score}/5${r.topics ? ` (topics: ${r.topics})` : ''}${r.category ? ` [${r.category}]` : ''}`
+      ).join('\n');
 
     const prompt = `You are an interview prep coach analyzing a student's practice history to identify weaknesses and create a study plan.
 
