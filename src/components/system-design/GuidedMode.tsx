@@ -3,7 +3,7 @@ import ReactMarkdown from 'react-markdown'
 import { api, getErrorMessage } from '../../lib/api'
 import { STEPS, type ModeProps } from './types'
 
-export default function GuidedMode({ item, onResult, onChangeMode }: ModeProps) {
+export default function GuidedMode({ item, onResult, onChangeMode, getElapsed }: ModeProps) {
   const [currentStep, setCurrentStep] = useState(0)
   const [stepAnswers, setStepAnswers] = useState<Record<string, string>>({})
   const [stepFeedback, setStepFeedback] = useState<Record<string, string>>({})
@@ -48,7 +48,7 @@ export default function GuidedMode({ item, onResult, onChangeMode }: ModeProps) 
       .filter(s => stepAnswers[s.key]?.trim())
       .map(s => `### ${s.label}\n${stepAnswers[s.key]}`)
       .join('\n\n')
-    try { onResult(await api.submitReview('system_design', item.id, summary, stepAnswers)) }
+    try { onResult(await api.submitReview('system_design', item.id, summary, stepAnswers, getElapsed())) }
     catch (e) { alert(getErrorMessage(e)) }
     finally { setSubmitting(false) }
   }

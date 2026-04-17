@@ -3,6 +3,7 @@ import { api, getErrorMessage, type BehavioralQuestion, type Review } from '../l
 import { sanitizeHtml } from '../lib/ui'
 import { EvaluationResult, ReviewHistory } from './ReviewFeedback'
 import ProblemNotes from './ProblemNotes'
+import { SessionTimerDisplay, useSessionTimer } from './SessionTimer'
 
 export default function BehavioralReview({ item, onBack }: { item: BehavioralQuestion; onBack: () => void }) {
   const [answer, setAnswer] = useState('')
@@ -10,18 +11,23 @@ export default function BehavioralReview({ item, onBack }: { item: BehavioralQue
   const [result, setResult] = useState<Review | null>(null)
   const [showGuidance, setShowGuidance] = useState(false)
   const [history, setHistory] = useState<Review[]>([])
+  const timer = useSessionTimer()
 
   useEffect(() => { api.getReviewHistory('behavioral', item.id).then(setHistory).catch(() => {}) }, [item.id, result])
 
   const submit = async () => {
     if (!answer.trim() || submitting) return
     setSubmitting(true)
-    try { setResult(await api.submitReview('behavioral', item.id, answer)) }
+    try {
+      const review = await api.submitReview('behavioral', item.id, answer, undefined, timer.getElapsed())
+      timer.stop()
+      setResult(review)
+    }
     catch (e) { alert(getErrorMessage(e)) }
     finally { setSubmitting(false) }
   }
 
-  const reset = () => { setAnswer(''); setResult(null); setShowGuidance(false) }
+  const reset = () => { setAnswer(''); setResult(null); setShowGuidance(false); timer.restart() }
 
   return (
     <div>
@@ -29,6 +35,9 @@ export default function BehavioralReview({ item, onBack }: { item: BehavioralQue
         <div className="flex items-center gap-3 mb-2">
           <h2 className="text-xl font-bold">{item.title}</h2>
           {item.framework && <span className="text-xs bg-pink-500/20 text-pink-400 border border-pink-500/30 px-2 py-0.5 rounded">{item.framework}</span>}
+          <div className="ml-auto">
+            <SessionTimerDisplay category="behavioral" timer={timer} />
+          </div>
         </div>
         {item.category && <span className="text-xs text-zinc-500">{item.category}</span>}
       </div>

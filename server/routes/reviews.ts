@@ -31,7 +31,7 @@ function getItemContent(itemType: string, item: any): { title: string; content: 
 // Submit a review
 router.post('/', async (req, res) => {
   try {
-    const { item_type, item_id, user_answer, step_data } = req.body;
+    const { item_type, item_id, user_answer, step_data, duration_seconds } = req.body;
     if (!item_type || !item_id || !user_answer) {
       return res.status(400).json({ error: 'item_type, item_id, and user_answer are required' });
     }
@@ -48,10 +48,14 @@ router.post('/', async (req, res) => {
       title, content, reference, user_answer, category, step_data || undefined
     );
 
+    const duration = Number.isFinite(duration_seconds) && duration_seconds >= 0
+      ? Math.round(duration_seconds)
+      : null;
+
     const result = db.prepare(`
-      INSERT INTO reviews (item_type, item_id, user_answer, evaluation, score, step_data)
-      VALUES (?, ?, ?, ?, ?, ?)
-    `).run(item_type, item_id, user_answer, evaluation, score, step_data ? JSON.stringify(step_data) : null);
+      INSERT INTO reviews (item_type, item_id, user_answer, evaluation, score, step_data, duration_seconds)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `).run(item_type, item_id, user_answer, evaluation, score, step_data ? JSON.stringify(step_data) : null, duration);
 
     // Update SRS state based on score
     updateSRS(item_type, item_id, score);

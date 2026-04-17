@@ -55,4 +55,5 @@ export interface ModeProps {
   item: SystemDesignProblem
   onResult: (r: Review) => void
   onChangeMode: () => void
+  getElapsed: () => number
 }

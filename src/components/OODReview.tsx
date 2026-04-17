@@ -3,6 +3,7 @@ import { api, getErrorMessage, type OODProblem, type Review } from '../lib/api'
 import { DIFFICULTY_COLORS, sanitizeHtml } from '../lib/ui'
 import { EvaluationResult, ReviewHistory } from './ReviewFeedback'
 import ProblemNotes from './ProblemNotes'
+import { SessionTimerDisplay, useSessionTimer } from './SessionTimer'
 
 interface StepDef {
   key: string
@@ -63,6 +64,7 @@ export default function OODReview({ item, onBack }: { item: OODProblem; onBack: 
   const [submitting, setSubmitting] = useState(false)
   const [result, setResult] = useState<Review | null>(null)
   const [history, setHistory] = useState<Review[]>([])
+  const timer = useSessionTimer()
 
   useEffect(() => { api.getReviewHistory('ood', item.id).then(setHistory).catch(() => {}) }, [item.id, result])
 
@@ -80,7 +82,9 @@ export default function OODReview({ item, onBack }: { item: OODProblem; onBack: 
       .map(s => `### ${s.label}\n${stepAnswers[s.key]}`)
       .join('\n\n')
     try {
-      setResult(await api.submitReview('ood', item.id, summary, stepAnswers))
+      const review = await api.submitReview('ood', item.id, summary, stepAnswers, timer.getElapsed())
+      timer.stop()
+      setResult(review)
     } catch (e) { alert(getErrorMessage(e)) }
     finally { setSubmitting(false) }
   }
@@ -88,14 +92,18 @@ export default function OODReview({ item, onBack }: { item: OODProblem; onBack: 
   const submitQuick = async () => {
     if (!quickAnswer.trim() || submitting) return
     setSubmitting(true)
-    try { setResult(await api.submitReview('ood', item.id, quickAnswer)) }
+    try {
+      const review = await api.submitReview('ood', item.id, quickAnswer, undefined, timer.getElapsed())
+      timer.stop()
+      setResult(review)
+    }
     catch (e) { alert(getErrorMessage(e)) }
     finally { setSubmitting(false) }
   }
 
   const reset = () => {
     setMode('choose'); setCurrentStep(0); setStepAnswers({})
-    setQuickAnswer(''); setResult(null)
+    setQuickAnswer(''); setResult(null); timer.restart()
   }
 
   if (result) {
@@ -119,6 +127,9 @@ export default function OODReview({ item, onBack }: { item: OODProblem; onBack: 
         <div className="flex items-center gap-3 mb-2">
           <h2 className="text-xl font-bold">{item.title}</h2>
           <span className={`text-sm ${diffColor}`}>{item.difficulty}</span>
+          <div className="ml-auto">
+            <SessionTimerDisplay category="ood" timer={timer} />
+          </div>
         </div>
       </div>
 

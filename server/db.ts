@@ -89,6 +89,7 @@ db.exec(`
     evaluation TEXT NOT NULL,
     score INTEGER NOT NULL CHECK(score BETWEEN 1 AND 5),
     step_data TEXT DEFAULT NULL,
+    duration_seconds INTEGER DEFAULT NULL,
     reviewed_at TEXT DEFAULT (datetime('now'))
   );
 
@@ -148,5 +149,11 @@ db.exec(`
     SELECT 1 FROM srs_state s WHERE s.item_type = r.item_type AND s.item_id = r.item_id
   )
 `);
+
+// Add duration_seconds to reviews for existing installs (idempotent).
+const reviewCols = db.prepare("PRAGMA table_info(reviews)").all() as { name: string }[];
+if (!reviewCols.some(c => c.name === 'duration_seconds')) {
+  db.exec('ALTER TABLE reviews ADD COLUMN duration_seconds INTEGER DEFAULT NULL');
+}
 
 export default db;

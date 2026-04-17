@@ -2,14 +2,14 @@ import { useState } from 'react'
 import { api, getErrorMessage } from '../../lib/api'
 import type { ModeProps } from './types'
 
-export default function QuickMode({ item, onResult, onChangeMode }: ModeProps) {
+export default function QuickMode({ item, onResult, onChangeMode, getElapsed }: ModeProps) {
   const [answer, setAnswer] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
   const submit = async () => {
     if (!answer.trim() || submitting) return
     setSubmitting(true)
-    try { onResult(await api.submitReview('system_design', item.id, answer)) }
+    try { onResult(await api.submitReview('system_design', item.id, answer, undefined, getElapsed())) }
     catch (e) { alert(getErrorMessage(e)) }
     finally { setSubmitting(false) }
   }

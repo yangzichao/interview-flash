@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import { api, getErrorMessage, type Review, type ItemType } from '../lib/api'
+import { formatDuration } from './SessionTimer'
 
 const scoreColors = ['', 'text-red-400', 'text-orange-400', 'text-amber-400', 'text-lime-400', 'text-emerald-400']
 const scoreLabels = ['', 'No recall', 'Weak', 'Partial', 'Strong', 'Perfect']
@@ -170,7 +171,7 @@ function FollowUpSection({ content, itemType, itemId, evaluation }: {
   )
 }
 
-export function ScoreBanner({ score }: { score: number }) {
+export function ScoreBanner({ score, durationSeconds }: { score: number; durationSeconds?: number | null }) {
   return (
     <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-6 flex items-center gap-4">
       <span className={`text-4xl font-bold ${scoreColors[score]}`}>{score}/5</span>
@@ -178,6 +179,12 @@ export function ScoreBanner({ score }: { score: number }) {
         <span className={`text-lg font-semibold ${scoreColors[score]}`}>{scoreLabels[score]}</span>
         <p className="text-xs text-zinc-500 mt-0.5">Recall score</p>
       </div>
+      {durationSeconds != null && (
+        <div className="ml-auto text-right">
+          <div className="text-lg font-mono text-zinc-300 tabular-nums">{formatDuration(durationSeconds)}</div>
+          <p className="text-xs text-zinc-500 mt-0.5">Time to answer</p>
+        </div>
+      )}
     </div>
   )
 }
@@ -185,7 +192,7 @@ export function ScoreBanner({ score }: { score: number }) {
 export function EvaluationResult({ result, onReset, onBack }: { result: Review; onReset: () => void; onBack: () => void }) {
   return (
     <div className="space-y-4">
-      <ScoreBanner score={result.score} />
+      <ScoreBanner score={result.score} durationSeconds={result.duration_seconds} />
       <SectionCards evaluation={result.evaluation} itemType={result.item_type} itemId={result.item_id} />
       <div className="bg-zinc-900/50 border border-zinc-800 rounded-lg p-4">
         <h4 className="text-xs text-zinc-500 uppercase tracking-wider mb-2">Your Answer</h4>
@@ -215,6 +222,9 @@ export function HistoryEntry({ review }: { review: Review }) {
         <div className="flex items-center gap-3">
           <span className={`font-medium text-sm ${scoreColors[review.score]}`}>{review.score}/5</span>
           <span className={`text-xs ${scoreColors[review.score]}`}>{scoreLabels[review.score]}</span>
+          {review.duration_seconds != null && (
+            <span className="text-xs font-mono text-zinc-500 tabular-nums">{formatDuration(review.duration_seconds)}</span>
+          )}
           <span className="text-xs text-zinc-600">{new Date(review.reviewed_at).toLocaleString()}</span>
         </div>
         <span className="text-zinc-600 text-sm">{expanded ? '▲' : '▼'}</span>

@@ -3,7 +3,7 @@ import ReactMarkdown from 'react-markdown'
 import { api, getErrorMessage } from '../../lib/api'
 import type { ModeProps } from './types'
 
-export default function MockInterviewMode({ item, onResult, onChangeMode }: ModeProps) {
+export default function MockInterviewMode({ item, onResult, onChangeMode, getElapsed }: ModeProps) {
   const [messages, setMessages] = useState<{ role: 'interviewer' | 'candidate'; content: string }[]>([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
@@ -48,7 +48,7 @@ export default function MockInterviewMode({ item, onResult, onChangeMode }: Mode
     try {
       onResult(await api.submitReview('system_design', item.id, fullAnswer, {
         mock_interview_transcript: messages.map(m => `[${m.role}]: ${m.content}`).join('\n\n'),
-      }))
+      }, getElapsed()))
     } catch (e) { alert(getErrorMessage(e)) }
     finally { setSubmitting(false) }
   }

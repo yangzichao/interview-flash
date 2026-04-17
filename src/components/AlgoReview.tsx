@@ -4,6 +4,7 @@ import { api, getErrorMessage, type Algorithm, type Review } from '../lib/api'
 import { DIFFICULTY_COLORS, parseJson, sanitizeHtml } from '../lib/ui'
 import { EvaluationResult, ReviewHistory } from './ReviewFeedback'
 import ProblemNotes from './ProblemNotes'
+import { SessionTimerDisplay, useSessionTimer } from './SessionTimer'
 
 const LANGUAGES = [
   'python', 'javascript', 'typescript', 'java', 'c++', 'c', 'go', 'rust', 'swift', 'kotlin', 'c#', 'ruby', 'scala',
@@ -17,6 +18,7 @@ export default function AlgoReview({ item, onBack }: { item: Algorithm; onBack: 
   const [showSolution, setShowSolution] = useState(false)
   const [history, setHistory] = useState<Review[]>([])
   const [language, setLanguage] = useState('python')
+  const timer = useSessionTimer()
 
   useEffect(() => { api.getReviewHistory('algorithm', item.id).then(setHistory).catch(() => {}) }, [item.id, result])
   useEffect(() => {
@@ -28,17 +30,23 @@ export default function AlgoReview({ item, onBack }: { item: Algorithm; onBack: 
   const submit = async () => {
     if (!answer.trim() || submitting) return
     setSubmitting(true)
+    const durationSeconds = timer.getElapsed()
     try {
       // Save language preference alongside review submission
-      await Promise.all([
+      const [, review] = await Promise.all([
         api.updateSettings({ preferred_language: language }).catch(() => {}),
-        api.submitReview('algorithm', item.id, answer).then(setResult),
+        api.submitReview('algorithm', item.id, answer, undefined, durationSeconds),
       ])
+      timer.stop()
+      setResult(review)
     } catch (e) { alert(getErrorMessage(e)) }
     finally { setSubmitting(false) }
   }
 
-  const reset = () => { setAnswer(''); setResult(null); setShowDesc(false); setShowSolution(false) }
+  const reset = () => {
+    setAnswer(''); setResult(null); setShowDesc(false); setShowSolution(false)
+    timer.restart()
+  }
 
   const topics = parseJson(item.topics)
   const diffColor = DIFFICULTY_COLORS[item.difficulty] || 'text-zinc-400'
@@ -50,6 +58,9 @@ export default function AlgoReview({ item, onBack }: { item: Algorithm; onBack: 
           <span className="text-zinc-500 text-sm">#{item.leetcode_id}</span>
           <h2 className="text-xl font-bold">{item.title}</h2>
           <span className={`text-sm ${diffColor}`}>{item.difficulty}</span>
+          <div className="ml-auto">
+            <SessionTimerDisplay category="algorithm" timer={timer} />
+          </div>
         </div>
         {topics.length > 0 && (
           <div className="flex gap-1.5 mb-4">

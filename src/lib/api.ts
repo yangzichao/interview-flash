@@ -84,6 +84,7 @@ export interface Review {
   evaluation: string;
   score: number;
   step_data: string | null;
+  duration_seconds: number | null;
   reviewed_at: string;
 }
 
@@ -140,10 +141,16 @@ export const api = {
   deleteSystemDesign: (id: number) => request<{ ok: boolean }>(`/api/system-design/${id}`, { method: 'DELETE' }),
 
   // Reviews (unified)
-  submitReview: (item_type: ItemType, item_id: number, user_answer: string, step_data?: Record<string, string>) =>
+  submitReview: (
+    item_type: ItemType,
+    item_id: number,
+    user_answer: string,
+    step_data?: Record<string, string>,
+    duration_seconds?: number,
+  ) =>
     request<Review>('/api/reviews', {
       method: 'POST',
-      body: JSON.stringify({ item_type, item_id, user_answer, step_data }),
+      body: JSON.stringify({ item_type, item_id, user_answer, step_data, duration_seconds }),
     }),
   getReviewHistory: (itemType: ItemType, itemId: number) =>
     request<Review[]>(`/api/reviews/${itemType}/${itemId}`),

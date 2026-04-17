@@ -1,10 +1,19 @@
 // Shared UI utilities — color maps, score badge, helper functions
 import DOMPurify from 'dompurify'
+import type { ItemType } from './api'
 
 export const DIFFICULTY_COLORS: Record<string, string> = {
   Easy: 'text-emerald-400',
   Medium: 'text-amber-400',
   Hard: 'text-red-400',
+}
+
+// Target time budgets per review category (seconds).
+export const TARGET_SECONDS: Record<ItemType, number> = {
+  algorithm: 25 * 60,
+  behavioral: 3 * 60,
+  ood: 35 * 60,
+  system_design: 45 * 60,
 }
 
 export const SCORE_BADGE_COLORS = [

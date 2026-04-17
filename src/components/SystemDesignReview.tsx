@@ -6,6 +6,7 @@ import ProblemNotes from './ProblemNotes'
 import QuickMode from './system-design/QuickMode'
 import GuidedMode from './system-design/GuidedMode'
 import MockInterviewMode from './system-design/MockInterviewMode'
+import { SessionTimerDisplay, useSessionTimer } from './SessionTimer'
 
 type Mode = 'choose' | 'guided' | 'quick' | 'mock'
 
@@ -13,11 +14,13 @@ export default function SystemDesignReview({ item, onBack }: { item: SystemDesig
   const [mode, setMode] = useState<Mode>('choose')
   const [result, setResult] = useState<Review | null>(null)
   const [history, setHistory] = useState<Review[]>([])
+  const timer = useSessionTimer()
 
   useEffect(() => { api.getReviewHistory('system_design', item.id).then(setHistory).catch(() => {}) }, [item.id, result])
 
   const diffColor = DIFFICULTY_COLORS[item.difficulty] || 'text-zinc-400'
-  const reset = () => { setMode('choose'); setResult(null) }
+  const reset = () => { setMode('choose'); setResult(null); timer.restart() }
+  const handleResult = (r: Review) => { timer.stop(); setResult(r) }
 
   if (result) {
     return (
@@ -38,6 +41,9 @@ export default function SystemDesignReview({ item, onBack }: { item: SystemDesig
         <div className="flex items-center gap-3 mb-2">
           <h2 className="text-xl font-bold">{item.title}</h2>
           <span className={`text-sm ${diffColor}`}>{item.difficulty}</span>
+          <div className="ml-auto">
+            <SessionTimerDisplay category="system_design" timer={timer} />
+          </div>
         </div>
       </div>
 
@@ -66,9 +72,9 @@ export default function SystemDesignReview({ item, onBack }: { item: SystemDesig
         </div>
       )}
 
-      {mode === 'quick' && <QuickMode item={item} onResult={setResult} onChangeMode={() => setMode('choose')} />}
-      {mode === 'guided' && <GuidedMode item={item} onResult={setResult} onChangeMode={() => setMode('choose')} />}
-      {mode === 'mock' && <MockInterviewMode item={item} onResult={setResult} onChangeMode={() => setMode('choose')} />}
+      {mode === 'quick' && <QuickMode item={item} onResult={handleResult} onChangeMode={() => setMode('choose')} getElapsed={timer.getElapsed} />}
+      {mode === 'guided' && <GuidedMode item={item} onResult={handleResult} onChangeMode={() => setMode('choose')} getElapsed={timer.getElapsed} />}
+      {mode === 'mock' && <MockInterviewMode item={item} onResult={handleResult} onChangeMode={() => setMode('choose')} getElapsed={timer.getElapsed} />}
 
       <ReviewHistory reviews={history} />
     </div>
